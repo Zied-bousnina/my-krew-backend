@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema({
   },
   preRegister: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'preRegistration',
+    ref: 'preRegistartion',
     default: null,
   },
 
@@ -109,6 +109,8 @@ const userSchema = new mongoose.Schema({
     }
   }]
 
+},{
+  timestamps: true
 }
 );
 userSchema.methods.addMission = async function (missionData) {

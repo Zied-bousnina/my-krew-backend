@@ -102,11 +102,22 @@ const registerUser = async (req, res) => {
     }
 }
 
+const getAllConsultant = async (req, res) => {
+    try {
+        const consultants = await userModel.find({ role: "CONSULTANT" }).populate("preRegister");
+        return res.status(200).json(consultants);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
 
 
 
 
 module.exports = {
         authUser,
-        registerUser
+        registerUser,
+        getAllConsultant
     }
