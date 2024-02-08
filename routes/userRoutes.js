@@ -4,7 +4,7 @@ const protect = require('../middleware/authMiddleware.js');
 const express = require('express');
 const { ROLES, isRole, isResetTokenValid } = require('../security/Rolemiddleware');
 const { authUser, registerUser, getAllConsultant } = require('../controllers/users.controller.js');
-const { createPreRegistration1, createPreRegistration2, createPreRegistration3, getPreregistration } = require('../controllers/preregistration.Controller.js');
+const { createPreRegistration1, createPreRegistration2, createPreRegistration3, getPreregistration, getPendingPreregistration, getConsultantStats } = require('../controllers/preregistration.Controller.js');
 const router = express.Router()
 const storage = multer.diskStorage({});
 
@@ -24,5 +24,6 @@ router.route('/preRegistration/createPreRegistration2').post(passport.authentica
 router.route('/preRegistration/createPreRegistration4').post(passport.authenticate('jwt', {session: false}),createPreRegistration3)
 router.route('/preRegistration/getPreregistration').get(passport.authenticate('jwt', {session: false}),getPreregistration)
 router.route('/consultants/getAllConsultant').get(passport.authenticate('jwt', {session: false}),getAllConsultant)
-
+router.route('/preregistartion/getPendingPreregistration').get(getPendingPreregistration)
+router.route('/getConsultantStats').get(getConsultantStats)
 module.exports = router
