@@ -12,6 +12,7 @@ const morgan = require('morgan');
 var app = express();
 const socket = require('socket.io');
 const PORT = process.env.PORT || 5001;
+var cors = require('cors')
 let server = app.listen(PORT, async (req, res) => {
   try {
     await connectDB();
@@ -35,6 +36,7 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
   });
+  app.use(cors())
   app.use(passport.initialize())
   require('./security/passport')(passport)
   // connectDB();
