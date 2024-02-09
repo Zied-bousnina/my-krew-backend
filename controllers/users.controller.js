@@ -112,6 +112,17 @@ const getAllConsultant = async (req, res) => {
     }
 }
 
+const getConsultantById = async (req, res) => {
+    try {
+        const consultant = await userModel.find({preRegister:req.params.id}).populate("preRegister");
+        return res.status(200).json(consultant);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+
 
 
 
@@ -119,5 +130,6 @@ const getAllConsultant = async (req, res) => {
 module.exports = {
         authUser,
         registerUser,
-        getAllConsultant
+        getAllConsultant,
+        getConsultantById
     }

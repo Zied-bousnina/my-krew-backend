@@ -1,4 +1,4 @@
-var _ = require('lodash');	
+var _ = require('lodash');
 var nodemailer = require('nodemailer');
 
 var config = {
@@ -11,7 +11,7 @@ var config = {
         pass: process.env.EMAIL_TEST_APP_PSWD
     }
 };
-    
+
 var transporter = nodemailer.createTransport(config);
 
 var defaultMail = {
@@ -23,7 +23,7 @@ var defaultMail = {
 const send = (to, subject, html) => {
     // use default setting
     mail = _.merge({html}, defaultMail, to);
-    
+
     // send email
     transporter.sendMail(mail, function(error, info){
         if(error) return console.log(error);
