@@ -4,6 +4,7 @@ const preregistrationStep1Validation = require('../validations/preregistrationSt
 const cloudinary = require('../utils/uploadImage');
 const userModel = require('../models/userModel');
 const moment = require('moment');
+const ContractProcess = require('../models/contractModel.js');
 const createPreRegistration1 = async (req, res) => {
     console.log(req)
     try {
@@ -222,6 +223,96 @@ const getConsultantStats = async (req, res) => {
     }
 }
 
+const validatePreregistrationClientInfo = async (req, res) => {
+    try {
+        const {
+            firstName,
+            email,
+            phoneNumber,
+            location,
+            nationality,
+            socialSecurityNumber,
+            dateOfBirth,
+            ribDocument,
+            identificationDocument,
+            carInfo
+        } = req.body;
+
+        const preRegistration = await preRegistrationModel.findById(req.params.id);
+        if (!preRegistration) {
+            return res.status(404).json({ message: 'Pré-inscription non trouvée' });
+        }
+
+        let validated = "NOTVALIDATED"; // Initialize validated variable
+
+        if (
+            !firstName &&
+            !email &&
+            !phoneNumber &&
+            !location &&
+            !nationality &&
+            !socialSecurityNumber &&
+            !dateOfBirth &&
+            !ribDocument &&
+            !identificationDocument &&
+            !carInfo
+        ) {
+            // If any of the fields is present, set validated to "VALIDATED"
+            validated = "VALIDATED";
+
+            const newContractProcess = new ContractProcess();
+            const savedContractProcess = await newContractProcess.save();
+
+            await preRegistrationModel.findOneAndUpdate(
+                { _id: req.params.id },
+                {
+                    contractProcess: savedContractProcess._id,
+                },
+                { new: true }
+            );
+        }
+
+        const updatedPreRegistration = await preRegistrationModel.findOneAndUpdate(
+            { _id: req.params.id },
+            {
+                'personalInfo.firstName.validated': firstName === '' ? true : false,
+                'personalInfo.firstName.causeNonValidation': firstName,
+
+                'personalInfo.email.validated': email === '' ? true : false,
+                'personalInfo.email.causeNonValidation': email,
+                'personalInfo.phoneNumber.validated': phoneNumber === '' ? true : false,
+                'personalInfo.phoneNumber.causeNonValidation': phoneNumber,
+                'personalInfo.dateOfBirth.validated': dateOfBirth === '' ? true : false,
+                'personalInfo.dateOfBirth.causeNonValidation': dateOfBirth,
+                'personalInfo.location.validated': location === '' ? true : false,
+                'personalInfo.location.causeNonValidation': location,
+                'personalInfo.nationality.validated': nationality === '' ? true : false,
+                'personalInfo.nationality.causeNonValidation': nationality,
+                'personalInfo.socialSecurityNumber.validated': socialSecurityNumber === '' ? true : false,
+                'personalInfo.socialSecurityNumber.causeNonValidation': socialSecurityNumber,
+                'personalInfo.identificationDocument.validated': identificationDocument === '' ? true : false,
+                'personalInfo.identificationDocument.causeNonValidation': identificationDocument,
+                'personalInfo.carInfo.drivingLicense.validated': carInfo === '' ? true : false,
+                'personalInfo.carInfo.drivingLicense.causeNonValidation': carInfo,
+                'status': validated,
+            },
+            { new: true }
+        );
+
+        if (!updatedPreRegistration) {
+            return res.status(404).json({ error: "preregister not found" });
+        }
+
+        console.log(updatedPreRegistration)
+        return res.status(200).json(updatedPreRegistration);
+    } catch (error) {
+        console.error('Erreur lors de la validation des informations du client de la pré-inscription :', error);
+        return res.status(500).json({ message: 'Erreur interne du serveur' });
+    }
+};
+
+
+
 
 
 
@@ -235,5 +326,6 @@ module.exports = {
     createPreRegistration3,
     getPreregistration,
     getPendingPreregistration,
-    getConsultantStats
+    getConsultantStats,
+    validatePreregistrationClientInfo
 }
