@@ -169,7 +169,8 @@ const getPreregistration = async (req, res) => {
 
 const getPendingPreregistration = async (req, res) => {
     try {
-        const preRegistration = await preRegistrationModel.find({ status: 'PENDING' });
+        const preRegistration = await preRegistrationModel.find({ status: { $in: ['PENDING', 'NOTVALIDATED'] } });
+
         return res.status(200).json(preRegistration);
     } catch (error) {
         console.error(error);
