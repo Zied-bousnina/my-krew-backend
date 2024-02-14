@@ -153,7 +153,12 @@ const preRegistartionSchema = mongoose.Schema({
         missionKilled: {
             type: Boolean,
             default: false
-        }
+        },
+        status: {
+            type: String,
+            enum: [ 'PENDING', 'VALID', 'REJECTED', 'COMPLETED'],
+            default: 'PENDING',
+        },
     },
     addedDate: {
         type: Date,
