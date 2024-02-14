@@ -7,11 +7,8 @@ const resetTokenModels = require("../models/resetToken.models");
 
 const ROLES = {
     "ADMIN": 'ADMIN',
-    "USER": 'USER',
-    "MUNICIPAL": "MUNICIPAL",
-    "PRIVATE_COMPANY": "PRIVATE_COMPANY",
-    "DRIVER": "DRIVER",
-    "PARTNER": "PARTNER",
+    "RH": 'RH',
+    "CONSULTANT": 'CONSULTANT',
 
 }
 
