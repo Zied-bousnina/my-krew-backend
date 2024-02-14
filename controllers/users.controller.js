@@ -42,6 +42,7 @@ console.log(preRegistration)
             onligne: user.onligne,
             firstLogin: user.firstLogin,
             driverIsVerified: user.driverIsVerified,
+            preRegister: preRegistration,
           },
           process.env.SECRET_KEY,
           { expiresIn: Number.MAX_SAFE_INTEGER }
