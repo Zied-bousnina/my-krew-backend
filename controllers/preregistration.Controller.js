@@ -6,7 +6,7 @@ const userModel = require('../models/userModel');
 const moment = require('moment');
 const ContractProcess = require('../models/contractModel.js');
 const createPreRegistration1 = async (req, res) => {
-    console.log(req)
+    console.log(req.body)
     try {
         const { errors, isValid } = preregistrationStep1Validation(req.body);
         if (!isValid) {
@@ -50,8 +50,9 @@ const createPreRegistration1 = async (req, res) => {
     }
 };
 
+
 const createPreRegistration2 = async (req, res) => {
-    console.log(req.files)
+    console.log("vvvvvvvvvvvvvv",req)
     try {
         const {
             cin,
@@ -61,6 +62,7 @@ const createPreRegistration2 = async (req, res) => {
 
            } = req.files;
            const {rib,avs} = req.body;
+           console
            const uploadFileToCloudinary = async (file, folderName) => {
             if (file) {
               const result = await cloudinary.uploader.upload(file.path, {
@@ -93,6 +95,7 @@ const createPreRegistration2 = async (req, res) => {
         const options = { new: true, upsert: true };
 
         const updatedPreRegistration = await preRegistrationModel.findOneAndUpdate(query, update, options);
+        console.log(updatedPreRegistration)
 
         return res.status(200).json(updatedPreRegistration);
     }
@@ -103,6 +106,45 @@ const createPreRegistration2 = async (req, res) => {
 }
 
 const createPreRegistration3 = async (req, res) => {
+    console.log(req.body)
+    try {
+
+        const {
+            firstName,
+            lastName,
+            position,
+            email,
+            phoneNumber,
+            company
+        } = req.body;
+
+        const query = { userId: req.user.id };
+
+        const update = {
+            $set: {
+                [`clientInfo.company.value`]: company,
+                [`clientInfo.clientContact.firstName.value`]: firstName,
+                [`clientInfo.clientContact.lastName.value`]: lastName,
+                [`clientInfo.clientContact.position.value`]: position,
+                [`clientInfo.clientContact.email.value`]: email,
+                [`clientInfo.clientContact.phoneNumber.value`]: phoneNumber,
+
+
+            }
+        };
+
+        const options = { new: true, upsert: true };
+
+        const updatedPreRegistration = await preRegistrationModel.findOneAndUpdate(query, update, options);
+console.log("updatedPreRegistration",updatedPreRegistration)
+        return res.status(200).json(updatedPreRegistration);
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+const createPreRegistration4 = async (req, res) => {
     console.log(req.files)
     try {
         const {
@@ -325,6 +367,7 @@ module.exports = {
     createPreRegistration1,
     createPreRegistration2,
     createPreRegistration3,
+    createPreRegistration4,
     getPreregistration,
     getPendingPreregistration,
     getConsultantStats,
