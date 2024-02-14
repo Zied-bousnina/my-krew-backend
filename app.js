@@ -13,6 +13,8 @@ var app = express();
 const socket = require('socket.io');
 const PORT = process.env.PORT || 5001;
 var cors = require('cors')
+const consultantRoutes = require('./routes/consultantRoutes.js');
+
 let server = app.listen(PORT, async (req, res) => {
   try {
     await connectDB();
@@ -21,6 +23,7 @@ let server = app.listen(PORT, async (req, res) => {
   }
   console.log(`Listening on ${PORT}`);
 });
+
 const io = socket(server, {
   pingTimeout: 6000,
   cors: {
@@ -62,6 +65,7 @@ mongoose.connect(process.env.MONGO_URI)
 .catch(err=>console.log(err))
 // app.use('/api', indexRouter);
 app.use('/api/users', userRoutes);
+app.use('/api/consultant', consultantRoutes);
 // app.use('/api/basicInfo', BasicInfoRoutes);
 // app.use('/api/profile', profileRoutes);
 

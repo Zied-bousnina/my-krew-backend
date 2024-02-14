@@ -26,7 +26,7 @@ router.route('/preRegistration/createPreRegistration4').post(passport.authentica
 router.route('/preRegistration/getPreregistration').get(passport.authenticate('jwt', {session: false}),isRole(ROLES.CONSULTANT, ROLES.RH),getPreregistration)
 router.route('/consultants/getAllConsultant').get(passport.authenticate('jwt', {session: false}),isRole(  ROLES.CONSULTANT,ROLES.RH),getAllConsultant)
 router.route('/preregistartion/getPendingPreregistration').get(passport.authenticate('jwt', {session: false}),isRole(ROLES.CONSULTANT, ROLES.RH),getPendingPreregistration)
-router.route('/getConsultantStats').get(passport.authenticate('jwt', {session: false}),isRole( ROLES.CONSULTANT,ROLES.RH),getConsultantStats)
+router.route('/getConsultantStats').get(passport.authenticate('jwt', {session: false}),isRole(ROLES.CONSULTANT,ROLES.RH),getConsultantStats)
 router.route('/getConsultantById/:id').get(passport.authenticate('jwt', {session: false}),isRole(ROLES.CONSULTANT, ROLES.RH),getConsultantById)
 router.route('/validatePreregistrationClientInfo/:id').put(passport.authenticate('jwt', {session: false}),isRole( ROLES.CONSULTANT,ROLES.RH),validatePreregistrationClientInfo)
 module.exports = router
