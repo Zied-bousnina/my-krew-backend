@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const validateRegisterInput = require("../validations/validateRegisterInput");
 const preRegistrationModel = require("../models/preRegistrationModel");
+const newMissionModel = require("../models/newMissionModel");
 const authUser = async (req, res) => {
   try {
     const { errors, isValid } = validateLoginInput(req.body);
@@ -130,6 +131,65 @@ const getConsultantById = async (req, res) => {
   }
 };
 
+
+const getConsultantInfoById = async (req, res) => {
+  try {
+      const consultant = await userModel.findById(req.params.id).populate("preRegister");
+      const pendingCount = await preRegistrationModel.countDocuments({ status: 'PENDING' });
+      const traiteCount = await preRegistrationModel.countDocuments({ status: 'VALIDATED' });
+      const RejeteCount = await preRegistrationModel.countDocuments({ status: 'NOTVALIDATED' });
+      const allpreregistration = await preRegistrationModel.countDocuments({})
+      const newMission = await newMissionModel.countDocuments();
+console.log(pendingCount)
+console.log(allpreregistration)
+      return res.status(200).json(
+        {
+          consultant: consultant,
+          pendingCount: pendingCount,
+          allpreregistration:allpreregistration,
+          newMission:newMission,
+          traiteCount:traiteCount,
+          RejeteCount:RejeteCount
+
+
+
+
+
+        }
+      );
+  } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+const getConsultantInfoWithMissionById = async (req, res) => {
+  try {
+      const consultant = await userModel.findById(req.params.id).populate("preRegister");
+      const AllMission = await newMissionModel.find({userId:req.params.id});
+
+      console.log({
+        consultant: consultant,
+        AllMission:[...AllMission, consultant?.preRegister?.missionInfo]
+
+      })
+      return res.status(200).json(
+        {
+          consultant: consultant,
+          AllMission:[...AllMission, consultant?.preRegister?.missionInfo]
+
+        }
+      );
+  } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+
+
+
+
 const getCurrentConsultantById = async (req, res) => {
   try {
     const consultant = await userModel
@@ -151,9 +211,12 @@ const getCurrentConsultantById = async (req, res) => {
 };
 
 module.exports = {
-  authUser,
-  registerUser,
-  getAllConsultant,
-  getConsultantById,
-  getCurrentConsultantById,
-};
+        authUser,
+        registerUser,
+        getAllConsultant,
+        getConsultantById,
+        getConsultantInfoById,
+        getConsultantInfoWithMissionById,
+        getCurrentConsultantById,
+
+    }

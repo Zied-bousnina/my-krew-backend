@@ -3,8 +3,8 @@ const passport = require('passport');
 const protect = require('../middleware/authMiddleware.js');
 const express = require('express');
 const { ROLES, isRole, isResetTokenValid } = require('../security/Rolemiddleware');
-const { authUser, registerUser, getAllConsultant, getConsultantById, getCurrentConsultantById } = require('../controllers/users.controller.js');
-const { createPreRegistration1, createPreRegistration2, getPreregistration, getPendingPreregistration, getConsultantStats, validatePreregistrationClientInfo, createPreRegistration4, createPreRegistration3 } = require('../controllers/preregistration.Controller.js');
+const { authUser, registerUser, getAllConsultant, getConsultantById, getConsultantInfoById, getConsultantInfoWithMissionById, getCurrentConsultantById } = require('../controllers/users.controller.js');
+const { createPreRegistration1, createPreRegistration2, getPreregistration, getPendingPreregistration, getConsultantStats, validatePreregistrationClientInfo, createPreRegistration4, createPreRegistration3, validateProcessus,sendNote } = require('../controllers/preregistration.Controller.js');
 const router = express.Router()
 const storage = multer.diskStorage({});
 
@@ -28,6 +28,10 @@ router.route('/consultants/getAllConsultant').get(passport.authenticate('jwt', {
 router.route('/preregistartion/getPendingPreregistration').get(passport.authenticate('jwt', {session: false}),isRole(ROLES.CONSULTANT, ROLES.RH),getPendingPreregistration)
 router.route('/getConsultantStats').get(passport.authenticate('jwt', {session: false}),isRole(ROLES.CONSULTANT,ROLES.RH),getConsultantStats)
 router.route('/getConsultantById/:id').get(passport.authenticate('jwt', {session: false}),isRole(ROLES.CONSULTANT, ROLES.RH),getConsultantById)
+router.route('/getConsultantInfoById/:id').get(passport.authenticate('jwt', {session: false}),isRole(ROLES.CONSULTANT, ROLES.RH),getConsultantInfoById)
+router.route('/getConsultantInfoWithMissionById/:id').get(passport.authenticate('jwt', {session: false}),isRole(ROLES.CONSULTANT, ROLES.RH),getConsultantInfoWithMissionById)
+router.route('/validateProcessus/:id').put(passport.authenticate('jwt', {session: false}),isRole(ROLES.CONSULTANT, ROLES.RH),validateProcessus)
+router.route('/sendNote/:id').put(passport.authenticate('jwt', {session: false}),isRole(ROLES.CONSULTANT, ROLES.RH),sendNote)
 router.route('/validatePreregistrationClientInfo/:id').put(passport.authenticate('jwt', {session: false}),isRole( ROLES.CONSULTANT,ROLES.RH),validatePreregistrationClientInfo)
 router.route('/getCurrantConsultant').get(passport.authenticate('jwt', {session: false}),isRole(ROLES.CONSULTANT),getCurrentConsultantById)
 module.exports = router

@@ -278,7 +278,16 @@ const validatePreregistrationClientInfo = async (req, res) => {
             dateOfBirth,
             ribDocument,
             identificationDocument,
-            carInfo
+            carInfo,
+            // Client ---------------------
+            clientContactFirstName,
+            clientContactLastName,
+            clientContactPhoneNumber,
+            clientContactemail,
+            company,
+            position
+
+
         } = req.body;
 
         const preRegistration = await preRegistrationModel.findById(req.params.id);
@@ -287,6 +296,7 @@ const validatePreregistrationClientInfo = async (req, res) => {
         }
 
         let validated = "NOTVALIDATED"; // Initialize validated variable
+        let validateClient = "NOTVALIDATED"; // Initialize validated variable
 
         if (
             !firstName &&
@@ -314,6 +324,17 @@ const validatePreregistrationClientInfo = async (req, res) => {
                 { new: true }
             );
         }
+        if(
+            !clientContactFirstName&&
+            !clientContactLastName&&
+            !clientContactPhoneNumber&&
+            !clientContactemail&&
+            !company&&
+            !position
+        ){
+            validateClient = "VALIDATED";
+
+        }
 
         const updatedPreRegistration = await preRegistrationModel.findOneAndUpdate(
             { _id: req.params.id },
@@ -337,7 +358,21 @@ const validatePreregistrationClientInfo = async (req, res) => {
                 'personalInfo.identificationDocument.causeNonValidation': identificationDocument,
                 'personalInfo.carInfo.drivingLicense.validated': carInfo === '' ? true : false,
                 'personalInfo.carInfo.drivingLicense.causeNonValidation': carInfo,
-                'status': validated,
+                // client info
+                'clientInfo.company.validated': company === '' ? true : false,
+                'clientInfo.company.causeNonValidation': company,
+                'clientInfo.clientContact.position.validated': position === '' ? true : false,
+                'clientInfo.clientContact.position.causeNonValidation': position,
+                'clientInfo.clientContact.firstName.validated': clientContactFirstName === '' ? true : false,
+                'clientInfo.clientContact.firstName.causeNonValidation': clientContactFirstName,
+                'clientInfo.clientContact.lastName.validated': clientContactLastName === '' ? true : false,
+                'clientInfo.clientContact.lastName.causeNonValidation': clientContactLastName,
+                'clientInfo.clientContact.phoneNumber.validated': clientContactPhoneNumber === '' ? true : false,
+                'clientInfo.clientContact.phoneNumber.causeNonValidation': clientContactPhoneNumber,
+                'clientInfo.clientContact.email.validated': clientContactemail === '' ? true : false,
+                'clientInfo.clientContact.email.causeNonValidation': clientContactemail,
+
+                'status': validated =="VALIDATED" && validateClient =="VALIDATED" ? "VALIDATED" : "PENDING",
             },
             { new: true }
         );
@@ -353,6 +388,102 @@ const validatePreregistrationClientInfo = async (req, res) => {
         return res.status(500).json({ message: 'Erreur interne du serveur' });
     }
 };
+
+const validateProcessus = async (req, res) => {
+    try {
+      const { step, status } = req.body;
+      console.log('+++++++++++++++++++', req.body)
+      const preRegistration = await preRegistrationModel.findById(req.params.id);
+
+      if (!preRegistration) {
+        return res.status(404).json({ message: 'Pré-inscription non trouvée' });
+      }
+
+      let updateField;
+
+      switch (step) {
+        case 'Validation Informations Personnelles':
+          updateField = 'validateClient';
+          break;
+        case 'Prise de contact avec le client':
+          updateField = 'validateContractWithClient';
+          break;
+        case 'Contrat de service validé avec le client':
+          updateField = 'validateContractTravail';
+          break;
+        default:
+          updateField = 'transmissionContract';
+          break;
+      }
+
+      const updatedPreRegistration = await preRegistrationModel.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          [updateField]:
+            status === 'Validée'
+              ? 'VALIDATED'
+              : status === 'En cours'
+              ? 'PENDING'
+              : status === 'En attente'
+              ? 'NOTVALIDATED'
+              : 'NOTVALIDATED',
+        },
+        { new: true }
+      );
+
+      if (!updatedPreRegistration) {
+        return res.status(404).json({ error: "preregister not found" });
+      }
+
+      // Check if all fields are 'VALIDATED' and update the status accordingly
+      const allFieldsValidated = ['validateClient', 'validateContractWithClient', 'validateContractTravail', 'transmissionContract']
+      .every((field) => updatedPreRegistration[field] === 'VALIDATED');
+
+      if (allFieldsValidated) {
+        // Update the status to 'VALIDATED'
+        console.log('All fields are validated');
+        updatedPreRegistration.status = 'VALIDATED';
+        await updatedPreRegistration.save();
+      }else {
+        updatedPreRegistration.status = 'PENDING';
+        await updatedPreRegistration.save();
+      }
+
+      console.log(updatedPreRegistration);
+
+      return res.status(200).json(updatedPreRegistration);
+    } catch (error) {
+      console.error('Erreur lors de la validation des informations du client de la pré-inscription :', error);
+      return res.status(500).json({ message: 'Erreur interne du serveur' });
+    }
+  };
+
+
+  const sendNote = async(req,res)=> {
+    try {
+      const {note} = req.body;
+      const preRegistration = await preRegistrationModel.findById(req.params.id);
+      if (!preRegistration) {
+        return res.status(404).json({ message: 'Pré-inscription non trouvée' });
+      }
+      const updatedPreRegistration = await preRegistrationModel.findOneAndUpdate(
+        { _id: req.params.id },
+        { noteAuClient:note },
+        { new: true }
+      );
+
+      if (!updatedPreRegistration) {
+        return res.status(404).json({ error: "preregister not found" });
+      }
+        console.log(updatedPreRegistration)
+        return res.status(200).json(updatedPreRegistration);
+    }catch (error) {
+      console.error('Erreur lors de la validation des informations du client de la pré-inscription :', error);
+      return res.status(500).json({ message: 'Erreur interne du serveur' });
+    }
+
+  }
+
 
 
 
@@ -371,5 +502,7 @@ module.exports = {
     getPreregistration,
     getPendingPreregistration,
     getConsultantStats,
-    validatePreregistrationClientInfo
+    validatePreregistrationClientInfo,
+    validateProcessus,
+    sendNote
 }
