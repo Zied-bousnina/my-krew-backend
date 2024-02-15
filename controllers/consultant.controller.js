@@ -24,7 +24,7 @@ const getConsultantMissionsPending = async (req, res) => {
   try {
     const missions = await preRegistartion.find({
       userId: id,
-      status: "PENDING",
+      "missionInfo.status": "PENDING",
     });
 
     return res.status(200).json({
@@ -46,7 +46,7 @@ const getConsultantMissionsWaitingContact = async (req, res) => {
   try {
     const missions = await preRegistartion.find({
       userId: id,
-      status: "WAITINGCONTRACT",
+      "missionInfo.status": "WORKINGONIT",
     });
     return res.status(200).json({
       action: "consultant.controller.js/getConsultantMissionsWaitingContact",
@@ -67,7 +67,9 @@ const getConsultantMissionsValidated = async (req, res) => {
   try {
     const missions = await preRegistartion.find({
       userId: id,
-      status: "VALIDATED",
+      "missionInfo.status": "VALID",
+      "missionInfo.status": "COMPLETED",
+      "missionInfo.status": "REJECTED",
     });
     return res.status(200).json({
       action: "consultant.controller.js/getConsultantMissionsValidated",
@@ -88,7 +90,7 @@ const getConsultantMissionsNotValidated = async (req, res) => {
   try {
     const missions = await preRegistartion.find({
       userId: id,
-      status: "NOTVALIDATED",
+      "missionInfo.status": "REJECTED",
     });
 
     return res.status(200).json({
@@ -113,7 +115,7 @@ const getConsultantLastMission = async (req, res) => {
         userId: id,
       })
       .sort({ createdAt: -1 })
-      .limit(1); 
+      .limit(1);
 
     return res.status(200).json({
       action: "consultant.controller.js/getConsultantLastMission",
@@ -136,5 +138,5 @@ module.exports = {
   getConsultantMissionsWaitingContact,
   getConsultantMissionsValidated,
   getConsultantMissionsNotValidated,
-  getConsultantLastMission
+  getConsultantLastMission,
 };

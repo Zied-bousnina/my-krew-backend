@@ -156,7 +156,7 @@ const preRegistartionSchema = mongoose.Schema({
         },
         status: {
             type: String,
-            enum: [ 'PENDING', 'VALID', 'REJECTED', 'COMPLETED'],
+            enum: [ 'PENDING','WORKINGONIT' ,'VALID', 'REJECTED', 'COMPLETED'],
             default: 'PENDING',
         },
     },
