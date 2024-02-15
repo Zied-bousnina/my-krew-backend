@@ -278,7 +278,16 @@ const validatePreregistrationClientInfo = async (req, res) => {
             dateOfBirth,
             ribDocument,
             identificationDocument,
-            carInfo
+            carInfo,
+            // Client ---------------------
+            clientContactFirstName,
+            clientContactLastName,
+            clientContactPhoneNumber,
+            clientContactemail,
+            company,
+            position
+
+
         } = req.body;
 
         const preRegistration = await preRegistrationModel.findById(req.params.id);
@@ -287,6 +296,7 @@ const validatePreregistrationClientInfo = async (req, res) => {
         }
 
         let validated = "NOTVALIDATED"; // Initialize validated variable
+        let validateClient = "NOTVALIDATED"; // Initialize validated variable
 
         if (
             !firstName &&
@@ -314,6 +324,17 @@ const validatePreregistrationClientInfo = async (req, res) => {
                 { new: true }
             );
         }
+        if(
+            !clientContactFirstName&&
+            !clientContactLastName&&
+            !clientContactPhoneNumber&&
+            !clientContactemail&&
+            !company&&
+            !position
+        ){
+            validateClient = "VALIDATED";
+
+        }
 
         const updatedPreRegistration = await preRegistrationModel.findOneAndUpdate(
             { _id: req.params.id },
@@ -337,7 +358,21 @@ const validatePreregistrationClientInfo = async (req, res) => {
                 'personalInfo.identificationDocument.causeNonValidation': identificationDocument,
                 'personalInfo.carInfo.drivingLicense.validated': carInfo === '' ? true : false,
                 'personalInfo.carInfo.drivingLicense.causeNonValidation': carInfo,
-                'status': validated,
+                // client info
+                'clientInfo.company.validated': company === '' ? true : false,
+                'clientInfo.company.causeNonValidation': company,
+                'clientInfo.clientContact.position.validated': position === '' ? true : false,
+                'clientInfo.clientContact.position.causeNonValidation': position,
+                'clientInfo.clientContact.firstName.validated': clientContactFirstName === '' ? true : false,
+                'clientInfo.clientContact.firstName.causeNonValidation': clientContactFirstName,
+                'clientInfo.clientContact.lastName.validated': clientContactLastName === '' ? true : false,
+                'clientInfo.clientContact.lastName.causeNonValidation': clientContactLastName,
+                'clientInfo.clientContact.phoneNumber.validated': clientContactPhoneNumber === '' ? true : false,
+                'clientInfo.clientContact.phoneNumber.causeNonValidation': clientContactPhoneNumber,
+                'clientInfo.clientContact.email.validated': clientContactemail === '' ? true : false,
+                'clientInfo.clientContact.email.causeNonValidation': clientContactemail,
+
+                'status': validated =="VALIDATED" && validateClient =="VALIDATED" ? "VALIDATED" : "PENDING",
             },
             { new: true }
         );
@@ -353,7 +388,6 @@ const validatePreregistrationClientInfo = async (req, res) => {
         return res.status(500).json({ message: 'Erreur interne du serveur' });
     }
 };
-
 
 
 
