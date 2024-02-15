@@ -6,7 +6,11 @@ const newMissionStatus = ['PENDING', 'VALIDATED', 'WAITINGCONTRACT', 'NOTVALIDAT
 
 const newMissionSchema = new mongoose.Schema({
 
-        userId: String,
+        userId:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'user'
+
+        },
 
     clientInfo: {
         company:{

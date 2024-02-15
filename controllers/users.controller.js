@@ -154,6 +154,34 @@ console.log(allpreregistration)
   }
 }
 
+const getConsultantInfoWithMissionById = async (req, res) => {
+  try {
+      const consultant = await userModel.findById(req.params.id).populate("preRegister");
+      const AllMission = await newMissionModel.find({userId:req.params.id});
+
+      console.log({
+        consultant: consultant,
+        AllMission:[...AllMission, consultant?.preRegister?.missionInfo]
+
+      })
+      return res.status(200).json(
+        {
+          consultant: consultant,
+          AllMission:[...AllMission, consultant?.preRegister?.missionInfo]
+
+
+
+
+
+
+        }
+      );
+  } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
 
 
 
@@ -164,5 +192,6 @@ module.exports = {
         registerUser,
         getAllConsultant,
         getConsultantById,
-        getConsultantInfoById
+        getConsultantInfoById,
+        getConsultantInfoWithMissionById
     }
