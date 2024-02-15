@@ -389,6 +389,82 @@ const validatePreregistrationClientInfo = async (req, res) => {
     }
 };
 
+const validateProcessus = async (req, res) => {
+    try {
+      const { step, status } = req.body;
+      console.log('+++++++++++++++++++', req.body)
+      const preRegistration = await preRegistrationModel.findById(req.params.id);
+
+      if (!preRegistration) {
+        return res.status(404).json({ message: 'Pré-inscription non trouvée' });
+      }
+
+      let updateField;
+
+      switch (step) {
+        case 'Validation Informations Personnelles':
+          updateField = 'validateClient';
+          break;
+        case 'Prise de contact avec le client':
+          updateField = 'validateContractWithClient';
+          break;
+        case 'Contrat de service validé avec le client':
+          updateField = 'validateContractTravail';
+          break;
+        default:
+          updateField = 'transmissionContract';
+          break;
+      }
+
+      const updatedPreRegistration = await preRegistrationModel.findOneAndUpdate(
+        { _id: req.params.id },
+        { [updateField]:
+            (status === 'Validée' ? 'VALIDATED' :
+             (status === 'En cours' ? 'PENDING' :
+              (status === 'En attente' ? 'NOTVALIDATED' : 'NOTVALIDATED')))
+        },
+        { new: true }
+      );
+
+      if (!updatedPreRegistration) {
+        return res.status(404).json({ error: "preregister not found" });
+      }
+console.log(updatedPreRegistration)
+      return res.status(200).json(updatedPreRegistration);
+    } catch (error) {
+      console.error('Erreur lors de la validation des informations du client de la pré-inscription :', error);
+      return res.status(500).json({ message: 'Erreur interne du serveur' });
+    }
+  };
+
+
+  const sendNote = async(req,res)=> {
+    try {
+      const {note} = req.body;
+      const preRegistration = await preRegistrationModel.findById(req.params.id);
+      if (!preRegistration) {
+        return res.status(404).json({ message: 'Pré-inscription non trouvée' });
+      }
+      const updatedPreRegistration = await preRegistrationModel.findOneAndUpdate(
+        { _id: req.params.id },
+        { noteAuClient:note },
+        { new: true }
+      );
+
+      if (!updatedPreRegistration) {
+        return res.status(404).json({ error: "preregister not found" });
+      }
+        console.log(updatedPreRegistration)
+        return res.status(200).json(updatedPreRegistration);
+    }catch (error) {
+      console.error('Erreur lors de la validation des informations du client de la pré-inscription :', error);
+      return res.status(500).json({ message: 'Erreur interne du serveur' });
+    }
+
+  }
+
+
+
 
 
 
@@ -405,5 +481,7 @@ module.exports = {
     getPreregistration,
     getPendingPreregistration,
     getConsultantStats,
-    validatePreregistrationClientInfo
+    validatePreregistrationClientInfo,
+    validateProcessus,
+    sendNote
 }

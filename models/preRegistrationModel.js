@@ -203,7 +203,12 @@ const preRegistartionSchema = mongoose.Schema({
         type: String,
         enum: ['VALIDATED', 'PENDING', 'NOTVALIDATED'],
         default: 'PENDING',
-    }
+    },
+    noteAuClient :  {
+        type: String,
+
+    },
+
 
 
 
