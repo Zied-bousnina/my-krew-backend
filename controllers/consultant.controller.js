@@ -1,9 +1,10 @@
 const userModel = require("../models/userModel");
+const preRegistartion = require("../models/preRegistrationModel");
 
 const getConsultantMissions = async (req, res) => {
   const { id } = req.params;
   try {
-    const missions = await userModel.findById(id).select("missions");
+    const missions = await preRegistartion.find({ userId: id });
     return res.status(200).json({
       action: "consultant.controller.js/getConsultantMissions",
       status: "success",
@@ -21,19 +22,20 @@ const getConsultantMissions = async (req, res) => {
 const getConsultantMissionsPending = async (req, res) => {
   const { id } = req.params;
   try {
-    const missions = await userModel.findById(id).select("missions");
-    if (missions.length === 0) {
-      missions = missions.filter((mission) => mission.status === "PENDING");
-    }
+    const missions = await preRegistartion.find({
+      userId: id,
+      status: "PENDING",
+    });
+
     return res.status(200).json({
-      action: "consultant.controller.js/getConsultantMissions",
+      action: "consultant.controller.js/getConsultantMissionsPending",
       status: "success",
       data: missions,
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      action: "consultant.controller.js/getConsultantMissions",
+      action: "consultant.controller.js/getConsultantMissionsPending",
       status: "error",
       message: "Internal Server Error",
     });
@@ -42,22 +44,19 @@ const getConsultantMissionsPending = async (req, res) => {
 const getConsultantMissionsWaitingContact = async (req, res) => {
   const { id } = req.params;
   try {
-    const missions = await userModel.findById(id).select("missions");
-    if (missions.length === 0) {
-      missions = missions.filter(
-        (mission) => mission.status === "WAITINGCONTRACT"
-      );
-    }
-
+    const missions = await preRegistartion.find({
+      userId: id,
+      status: "WAITINGCONTRACT",
+    });
     return res.status(200).json({
-      action: "consultant.controller.js/getConsultantMissions",
+      action: "consultant.controller.js/getConsultantMissionsWaitingContact",
       status: "success",
       data: missions,
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      action: "consultant.controller.js/getConsultantMissions",
+      action: "consultant.controller.js/getConsultantMissionsWaitingContact",
       status: "error",
       message: "Internal Server Error",
     });
@@ -66,19 +65,19 @@ const getConsultantMissionsWaitingContact = async (req, res) => {
 const getConsultantMissionsValidated = async (req, res) => {
   const { id } = req.params;
   try {
-    const missions = await userModel.findById(id).select("missions");
-    if (missions.length === 0) {
-      missions = missions.filter((mission) => mission.status === "VALIDATED");
-    }
+    const missions = await preRegistartion.find({
+      userId: id,
+      status: "VALIDATED",
+    });
     return res.status(200).json({
-      action: "consultant.controller.js/getConsultantMissions",
+      action: "consultant.controller.js/getConsultantMissionsValidated",
       status: "success",
       data: missions,
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      action: "consultant.controller.js/getConsultantMissions",
+      action: "consultant.controller.js/getConsultantMissionsValidated",
       status: "error",
       message: "Internal Server Error",
     });
@@ -87,21 +86,44 @@ const getConsultantMissionsValidated = async (req, res) => {
 const getConsultantMissionsNotValidated = async (req, res) => {
   const { id } = req.params;
   try {
-    const missions = await userModel.findById(id).select("missions");
-    if (missions.length === 0) {
-      missions = missions.filter(
-        (mission) => mission.status === "NOTVALIDATED"
-      );
-    }
+    const missions = await preRegistartion.find({
+      userId: id,
+      status: "NOTVALIDATED",
+    });
+
     return res.status(200).json({
-      action: "consultant.controller.js/getConsultantMissions",
+      action: "consultant.controller.js/getConsultantMissionsNotValidated",
       status: "success",
       data: missions,
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      action: "consultant.controller.js/getConsultantMissions",
+      action: "consultant.controller.js/getConsultantMissionsNotValidated",
+      status: "error",
+      message: "Internal Server Error",
+    });
+  }
+};
+const getConsultantLastMission = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const missions = await preRegistartion
+      .find({
+        userId: id,
+      })
+      .sort({ createdAt: -1 })
+      .limit(1); 
+
+    return res.status(200).json({
+      action: "consultant.controller.js/getConsultantLastMission",
+      status: "success",
+      data: missions[0], // Return the first (and only) mission
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      action: "consultant.controller.js/getConsultantLastMission",
       status: "error",
       message: "Internal Server Error",
     });
@@ -114,4 +136,5 @@ module.exports = {
   getConsultantMissionsWaitingContact,
   getConsultantMissionsValidated,
   getConsultantMissionsNotValidated,
+  getConsultantLastMission
 };
