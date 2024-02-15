@@ -418,10 +418,15 @@ const validateProcessus = async (req, res) => {
 
       const updatedPreRegistration = await preRegistrationModel.findOneAndUpdate(
         { _id: req.params.id },
-        { [updateField]:
-            (status === 'Validée' ? 'VALIDATED' :
-             (status === 'En cours' ? 'PENDING' :
-              (status === 'En attente' ? 'NOTVALIDATED' : 'NOTVALIDATED')))
+        {
+          [updateField]:
+            status === 'Validée'
+              ? 'VALIDATED'
+              : status === 'En cours'
+              ? 'PENDING'
+              : status === 'En attente'
+              ? 'NOTVALIDATED'
+              : 'NOTVALIDATED',
         },
         { new: true }
       );
@@ -429,7 +434,23 @@ const validateProcessus = async (req, res) => {
       if (!updatedPreRegistration) {
         return res.status(404).json({ error: "preregister not found" });
       }
-console.log(updatedPreRegistration)
+
+      // Check if all fields are 'VALIDATED' and update the status accordingly
+      const allFieldsValidated = ['validateClient', 'validateContractWithClient', 'validateContractTravail', 'transmissionContract']
+      .every((field) => updatedPreRegistration[field] === 'VALIDATED');
+
+      if (allFieldsValidated) {
+        // Update the status to 'VALIDATED'
+        console.log('All fields are validated');
+        updatedPreRegistration.status = 'VALIDATED';
+        await updatedPreRegistration.save();
+      }else {
+        updatedPreRegistration.status = 'PENDING';
+        await updatedPreRegistration.save();
+      }
+
+      console.log(updatedPreRegistration);
+
       return res.status(200).json(updatedPreRegistration);
     } catch (error) {
       console.error('Erreur lors de la validation des informations du client de la pré-inscription :', error);
