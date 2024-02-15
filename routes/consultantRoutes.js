@@ -12,6 +12,7 @@ const {
   getConsultantMissionsValidated,
   getConsultantMissionsNotValidated,
   getConsultantMissionsWaitingContact,
+  getConsultantLastMission,
 } = require("../controllers/consultant.controller");
 
 router.get("/getAllMissions/:id", getConsultantMissions);
@@ -22,4 +23,5 @@ router.get(
 router.get("/getPendingMissions/:id", getConsultantMissionsPending);
 router.get("/getValidatedMissions/:id", getConsultantMissionsValidated);
 router.get("/getNotValidatedMissions/:id", getConsultantMissionsNotValidated);
+router.get("/getLastMission/:id", getConsultantLastMission);
 module.exports = router;
