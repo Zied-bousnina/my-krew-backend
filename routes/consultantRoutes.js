@@ -15,13 +15,33 @@ const {
   getConsultantLastMission,
 } = require("../controllers/consultant.controller");
 
-router.get("/getAllMissions/:id", getConsultantMissions);
+router.get(
+  "/getAllMissions/:id",
+  passport.authenticate("jwt", { session: false }),
+  isRole(ROLES.CONSULTANT),
+  getConsultantMissions
+);
 router.get(
   "/getWaitingContractMissions/:id",
   getConsultantMissionsWaitingContact
 );
-router.get("/getPendingMissions/:id", getConsultantMissionsPending);
-router.get("/getValidatedMissions/:id", getConsultantMissionsValidated);
+router.get(
+  "/getPendingMissions/:id",
+  passport.authenticate("jwt", { session: false }),
+  isRole(ROLES.CONSULTANT),
+  getConsultantMissionsPending
+);
+router.get(
+  "/getValidatedMissions/:id",
+  passport.authenticate("jwt", { session: false }),
+  isRole(ROLES.CONSULTANT),
+  getConsultantMissionsValidated
+);
 router.get("/getNotValidatedMissions/:id", getConsultantMissionsNotValidated);
-router.get("/getLastMission/:id", getConsultantLastMission);
+router.get(
+  "/getLastMission/:id",
+  passport.authenticate("jwt", { session: false }),
+  isRole(ROLES.CONSULTANT),
+  getConsultantLastMission
+);
 module.exports = router;

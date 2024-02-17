@@ -14,6 +14,7 @@ const socket = require('socket.io');
 const PORT = process.env.PORT || 5001;
 var cors = require('cors')
 const consultantRoutes = require('./routes/consultantRoutes.js');
+const missionRoutes = require('./routes/missionRoutes.js');
 
 let server = app.listen(PORT, async (req, res) => {
   try {
@@ -66,6 +67,7 @@ mongoose.connect(process.env.MONGO_URI)
 // app.use('/api', indexRouter);
 app.use('/api/users', userRoutes);
 app.use('/api/consultant', consultantRoutes);
+app.use('/api/mission', missionRoutes);
 // app.use('/api/basicInfo', BasicInfoRoutes);
 // app.use('/api/profile', profileRoutes);
 
