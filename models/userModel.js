@@ -1,117 +1,83 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
-const bcrypt = require('bcryptjs');
+const bcrypt = require("bcryptjs");
 
-const roles = ['CONSULTANT', 'RH', 'ADMIN'];
-const newMissionStatus = ['PENDING', 'VALIDATED', 'NOTVALIDATED'];
-const newTJMStatus = ['PENDING', 'VALIDATED', 'NOTVALIDATED'];
+const roles = ["CONSULTANT", "RH", "ADMIN"];
+const newMissionStatus = ["PENDING", "VALIDATED", "NOTVALIDATED"];
+const newTJMStatus = ["PENDING", "VALIDATED", "NOTVALIDATED"];
 
-const userSchema = new mongoose.Schema({
-  image: {
-    type: String,
-    default: "default.jpg"
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-    lowercase: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  role: {
-    type: String,
-    enum: roles,
-    default: 'CONSULTANT',
-  },
-  preRegister: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'preRegistartion',
-    default: null,
-  },
-
-  missions: [{
-    _id: {
+const userSchema = new mongoose.Schema(
+  {
+    image: {
+      type: String,
+      default: "default.jpg",
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    role: {
+      type: String,
+      enum: roles,
+      default: "CONSULTANT",
+    },
+    preRegister: {
       type: mongoose.Schema.Types.ObjectId,
-      default: new mongoose.Types.ObjectId()
+      ref: "preRegistartion",
+      default: null,
     },
-    craInformation: {
-      selectedDates : [{
-        date: {
-          type: Date,
-          default: null
-        }
-      }],
-      signature: String,
-      noteGlobale: String
-    },
-    missionInfo: {
-      profession: String,
-      industrySector: String,
-      finalClient: String,
-      dailyRate: Number,
-      startDate: Date,
-      endDate: Date,
-      isSimulationValidated: String
-    },
-    clientInfo: {
-      company: String,
-      clientContact: {
-        firstName: String,
-        lastName: String,
-        position: String,
-        email: String,
-        phoneNumber: String,
+
+    missions: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "newMission",
+        default: null,
+      },
+    ],
+    personalInfo: {
+      immatriculation: String,
+      firstName: String,
+      lastName: String,
+      email: String,
+      phoneNumber: String,
+      dateOfBirth: Date,
+      location: String,
+      nationality: String,
+      socialSecurityNumber: String,
+      identificationDocument: String,
+      rib: String,
+      ribDocument: String,
+      carInfo: {
+        hasCar: Boolean,
+        drivingLicense: String,
       },
     },
-    contractProcess: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'contractProcess'
-    },
-    newMissionStatus:{
-      type: String,
-      enum: newMissionStatus,
-      default: 'PENDING',
-    },
-  }],
-  personalInfo: {
-    immatriculation: String,
-    firstName: String,
-    lastName: String,
-    email: String,
-    phoneNumber: String,
-    dateOfBirth: Date,
-    location: String,
-    nationality: String,
-    socialSecurityNumber: String,
-    identificationDocument: String,
-    rib: String,
-    ribDocument: String,
-    carInfo: {
-      hasCar: Boolean,
-      drivingLicense: String,
-    },
+
+    userDocuments: [
+      {
+        _id: {
+          type: mongoose.Schema.Types.ObjectId,
+          default: new mongoose.Types.ObjectId(),
+        },
+        documentName: String,
+        document: String,
+        createdAt: {
+          type: Date,
+          default: Date.now(),
+        },
+      },
+    ],
   },
-
-  userDocuments:[{
-    _id: {
-      type: mongoose.Schema.Types.ObjectId,
-      default: new mongoose.Types.ObjectId()
-    },
-    documentName: String,
-    document: String,
-    createdAt:{
-      type: Date,
-      default: Date.now()
-    }
-  }]
-
-},{
-  timestamps: true
-}
+  {
+    timestamps: true,
+  }
 );
 userSchema.methods.addMission = async function (missionData) {
   try {
@@ -143,12 +109,11 @@ userSchema.methods.addDocument = async function (documentData) {
   }
 };
 
-
 userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password)
-}
-userSchema.methods.comparePassword = async function(password) {
-  const result = await bcrypt.compareSync(password, this.password)
-  return result
-}
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+userSchema.methods.comparePassword = async function (password) {
+  const result = await bcrypt.compareSync(password, this.password);
+  return result;
+};
 module.exports = mongoose.model("user", userSchema);

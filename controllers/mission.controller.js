@@ -1,6 +1,7 @@
 const newMission = require("../models/newMissionModel");
 const cloudinary = require("../utils/uploadImage");
 const ContractProcess = require("../models/contractModel.js");
+const User = require("../models/userModel.js");
 
 const createMission = async (req, res) => {
   try {
@@ -67,6 +68,9 @@ const createMission = async (req, res) => {
       mongoose: savedContractProcess._id,
     });
     const savedMission = await mission.save();
+    const user = await User.findById(req.user.id);
+    user.missions.push(savedMission._id);
+    await user.save();
     return res.status(200).json({
       status: "success",
       action: "mission.controller.js/createMission",
