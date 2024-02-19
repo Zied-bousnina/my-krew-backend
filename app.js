@@ -1,30 +1,76 @@
-var express = require('express');
-var path = require('path');
-require('colors');
-var logger = require('morgan');
-require('dotenv').config()
-const mongoose = require('mongoose')
+const express = require('express');
+const path = require('path');
+const colors = require('colors');
+const logger = require('morgan');
+require('dotenv').config();
+const mongoose = require('mongoose');
 const passport = require('passport');
 const userRoutes = require('./routes/userRoutes.js');
 const connectDB = require('./config/db.js');
 const formData = require('express-form-data');
 const morgan = require('morgan');
-var app = express();
-const socket = require('socket.io');
-const PORT = process.env.PORT || 5001;
-var cors = require('cors')
+const cors = require('cors');
 const consultantRoutes = require('./routes/consultantRoutes.js');
 const missionRoutes = require('./routes/missionRoutes.js');
-app.use(cors())
-let server = app.listen(PORT, async (req, res) => {
-  try {
-    await connectDB();
-  } catch (err) {
-    console.log(err.message);
-  }
-  console.log(`Listening on ${PORT}`);
+
+const app = express();
+const socket = require('socket.io');
+const PORT = process.env.PORT || 5001;
+
+// Apply CORS middleware at the beginning
+app.use(cors());
+
+// Additional CORS headers
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*'); // Allow requests from any origin
+  res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
 });
 
+// Database connection
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("Connected to the database"))
+  .catch(err => console.error("Error connecting to the database:", err));
+
+// Initialize Passport
+app.use(passport.initialize());
+require('./security/passport')(passport);
+
+// FormData middleware
+app.use(formData.parse());
+
+// Morgan middleware for development
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
+// Body parsing middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// Logger middleware
+app.use(logger('dev'));
+
+// Static files middleware
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Routes
+app.use('/api/users', userRoutes);
+app.use('/api/consultant', consultantRoutes);
+app.use('/api/mission', missionRoutes);
+
+// Start the server
+const server = app.listen(PORT, async () => {
+  try {
+    await connectDB();
+    console.log(`Server is running on port ${PORT}`);
+  } catch (err) {
+    console.error("Error starting the server:", err.message);
+  }
+});
+
+// Socket.io setup
 const io = socket(server, {
   pingTimeout: 6000,
   cors: {
@@ -34,42 +80,6 @@ const io = socket(server, {
   },
 });
 
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*'); // Allow requests from any origin
-    res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    next();
-  });
-
-  app.use(passport.initialize())
-  require('./security/passport')(passport)
-  // connectDB();
-  app.use(formData.parse());
-
-  if (process.env.NODE_ENV === 'development') {
-    app.use(morgan('dev'));
-  }
-
-app.use(express.json());
-app.use(express.urlencoded({extended: false}));
-
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-// app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-
-
-// connect to db =
-mongoose.connect(process.env.MONGO_URI)
-.then(()=>console.log("connected to db"))
-.catch(err=>console.log(err))
-// app.use('/api', indexRouter);
-app.use('/api/users', userRoutes);
-app.use('/api/consultant', consultantRoutes);
-app.use('/api/mission', missionRoutes);
-// app.use('/api/basicInfo', BasicInfoRoutes);
-// app.use('/api/profile', profileRoutes);
-
+// Additional socket.io configuration if needed
 
 module.exports = app;
