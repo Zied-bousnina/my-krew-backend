@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 5001;
 var cors = require('cors')
 const consultantRoutes = require('./routes/consultantRoutes.js');
 const missionRoutes = require('./routes/missionRoutes.js');
-
+app.use(cors())
 let server = app.listen(PORT, async (req, res) => {
   try {
     await connectDB();
@@ -40,7 +40,7 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
   });
-  app.use(cors())
+
   app.use(passport.initialize())
   require('./security/passport')(passport)
   // connectDB();
