@@ -7,6 +7,10 @@ const validateRegisterInput = require("../validations/validateRegisterInput");
 const preRegistrationModel = require("../models/preRegistrationModel");
 const newMissionModel = require("../models/newMissionModel");
 const cloudinary = require("../utils/uploadImage");
+const resetTokenModels = require("../models/resetToken.models");
+const changePasswordValidation = require('../validations/ChangePasswordValidation.js')
+const { sendError, createRandomBytes } = require("../utils/helper");
+const { generateOTP,generateRandomPassword, mailTransport, generateEmailTemplate,generateDeleteAccountEmailTemplate,generateEmailTemplateDriver,generateEmailTemplatePartner,generateEmailTemplateAffectation, plainEmailTemplate, generatePasswordResetTemplate, generateEmailTemplateDeleterAccount, generateEmailTemplateValidationAccountByAdmin, generateEmailTemplateRefusAccountByAdmin } = require("../utils/mail");
 
 const authUser = async (req, res) => {
   try {
@@ -245,10 +249,10 @@ const updateConsultantCINById = async (req, res) => {
 
   try {
     const imageUrl = await uploadFileToCloudinary(image, "consultantCIN");
-    
+
     // Find the user and populate preRegister
     const consultant = await userModel.findById(req.user.id).populate("preRegister");
-    
+
     // Check if consultant and preRegister exist
     if (!consultant || !consultant.preRegister) {
       return res.status(404).json({
@@ -260,7 +264,7 @@ const updateConsultantCINById = async (req, res) => {
 
     // Update the nested document field
     consultant.preRegister.personalInfo.identificationDocument.value = imageUrl;
-    
+
     // Explicitly save the preRegister document to persist changes
     await consultant.preRegister.save();
 
@@ -294,10 +298,10 @@ const updateConsultantRIBById = async (req, res) => {
 
   try {
     const imageUrl = await uploadFileToCloudinary(image, "consultantRIB");
-    
+
     // Find the user and populate preRegister
     const consultant = await userModel.findById(req.user.id).populate("preRegister");
-    
+
     // Check if consultant and preRegister exist
     if (!consultant || !consultant.preRegister) {
       return res.status(404).json({
@@ -309,7 +313,7 @@ const updateConsultantRIBById = async (req, res) => {
 
     // Update the nested document field
     consultant.preRegister.personalInfo.ribDocument.value = imageUrl;
-    
+
     // Explicitly save the preRegister document to persist changes
     await consultant.preRegister.save();
 
