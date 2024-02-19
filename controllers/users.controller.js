@@ -11,7 +11,7 @@ const resetTokenModels = require("../models/resetToken.models");
 const changePasswordValidation = require('../validations/ChangePasswordValidation.js')
 const { sendError, createRandomBytes } = require("../utils/helper");
 const { generateOTP,generateRandomPassword, mailTransport, generateEmailTemplate,generateDeleteAccountEmailTemplate,generateEmailTemplateDriver,generateEmailTemplatePartner,generateEmailTemplateAffectation, plainEmailTemplate, generatePasswordResetTemplate, generateEmailTemplateDeleterAccount, generateEmailTemplateValidationAccountByAdmin, generateEmailTemplateRefusAccountByAdmin } = require("../utils/mail");
-
+var mailer = require('../utils/mailer');
 const authUser = async (req, res) => {
   try {
     const { errors, isValid } = validateLoginInput(req.body);
