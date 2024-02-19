@@ -3,7 +3,7 @@ const passport = require('passport');
 const protect = require('../middleware/authMiddleware.js');
 const express = require('express');
 const { ROLES, isRole, isResetTokenValid } = require('../security/Rolemiddleware');
-const { authUser, registerUser, getAllConsultant, getConsultantById, getConsultantInfoById, getConsultantInfoWithMissionById, getCurrentConsultantById } = require('../controllers/users.controller.js');
+const { authUser, registerUser, getAllConsultant, getConsultantById, getConsultantInfoById, getConsultantInfoWithMissionById, getCurrentConsultantById, updatePassword, resetPassword, forgotPassword } = require('../controllers/users.controller.js');
 const { createPreRegistration1, createPreRegistration2, getPreregistration, getPendingPreregistration, getConsultantStats, validatePreregistrationClientInfo, createPreRegistration4, createPreRegistration3, validateProcessus,sendNote } = require('../controllers/preregistration.Controller.js');
 const router = express.Router()
 const storage = multer.diskStorage({});
@@ -34,4 +34,13 @@ router.route('/validateProcessus/:id').put(passport.authenticate('jwt', {session
 router.route('/sendNote/:id').put(passport.authenticate('jwt', {session: false}),isRole(ROLES.CONSULTANT, ROLES.RH),sendNote)
 router.route('/validatePreregistrationClientInfo/:id').put(passport.authenticate('jwt', {session: false}),isRole( ROLES.CONSULTANT,ROLES.RH),validatePreregistrationClientInfo)
 router.route('/getCurrantConsultant').get(passport.authenticate('jwt', {session: false}),isRole(ROLES.CONSULTANT),getCurrentConsultantById)
+
+// Reset password
+router.post("/reset-password",isResetTokenValid,  resetPassword )
+router.route("/forgot-password").post( forgotPassword )
+
+router.get("/verify-token", isResetTokenValid, (req, res)=> {
+  res.json({success:true})
+})
+
 module.exports = router
