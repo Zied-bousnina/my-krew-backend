@@ -329,6 +329,123 @@ const updateConsultantRIBById = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  console.log(req.body.email)
+  const { email } = req.body;
+  if (!email) {
+    return sendError(res, 'Please provide a valid email!');
+  }
+
+  const user = await userModel.findOne({ email });
+  if (!user) {
+    return sendError(res, 'Sorry! User not found!');
+  }
+
+  const token = await resetTokenModels.findOne({ owner: user._id });
+  if (token ) {
+    return sendError(res, 'You can request a new token after one hour!');
+  }
+
+  const resetToken = await createRandomBytes();
+  // const resetTokenExpire = Date.now() + 3600000;
+
+  const newToken = new resetTokenModels({
+    owner: user._id,
+    token: resetToken
+
+
+  });
+
+  await newToken.save();
+
+  mailer.send({
+    to: ["zbousnina@yahoo.com",user.email ],
+    subject: "Verification code",
+    html: generatePasswordResetTemplate(`https://my-krew-fron-end.vercel.app/reset-password?token=${resetToken}&id=${user._id}`)
+  }, (err)=>{
+    console.log(err)
+  })
+
+  res.status(200).json({success: true, message: 'Reset password link has been sent to your email!' });
+};
+const resetPassword = async (req, res) => {
+  const { password } = req.body;
+  const user = await userModel.findById(req.user._id);
+  if (!user) {
+    return sendError(res, 'User not found');
+  }
+
+  const isSamePassword = await user.comparePassword(password);
+  if (isSamePassword) {
+    return sendError(res, 'You cannot use the same password');
+  }
+
+  if (password.trim().length < 8 || password.trim().length > 20) {
+    return sendError(res, 'Password must be between 8 and 20 characters');
+  }
+
+  // user.password = password.trim();
+  user.password = bcrypt.hashSync(password.trim(), 10);
+  await user.save();
+
+  await resetTokenModels.findOneAndDelete({ owner: user._id });
+
+
+  mailer.send({
+    to: ["zbousnina@yahoo.com",user.email ],
+    subject: "Verification code",
+    html: plainEmailTemplate('Password reset successfully', 'Your password has been reset successfully!'),
+  }, (err)=>{
+    console.log(err)
+  })
+
+  res.status(200).json({ message: 'Password reset successfully', success:true });
+};
+const updatePassword = async (req, res) => {
+  let responseSent = false;
+  const { errors, isValid } = changePasswordValidation(req.body);
+
+  try {
+    // Check validation
+    if (!isValid) {
+      responseSent = true;
+      return res.status(404).json(errors);
+    }
+
+    // Find user by req.user.id
+    const user = await userModel.findById(req.user.id);
+
+    if (!user) {
+      errors.email = "User not found";
+      responseSent = true;
+      return res.status(404).json(errors);
+    }
+
+    // Check if new password and confirm match
+    if (req.body.newPassword !== req.body.confirm) {
+      errors.confirm = "Password and confirm password do not match";
+      responseSent = true;
+      return res.status(400).json(errors);
+    }
+
+    // Update password and set firstLogin to false
+    const newPassword = bcrypt.hashSync((req.body.newPassword).trim(), 10);
+    user.password = newPassword;
+    user.firstLogin = false;
+
+    await user.save();
+    responseSent = true;
+    return res.status(200).json({ success: true, message: "Password updated successfully" });
+
+  } catch (error) {
+    if (!responseSent) {
+      responseSent = true;
+      console.log(error);
+      return res.status(500).json({ success: false, message: "error" });
+    }
+  }
+};
+
 
 module.exports = {
   authUser,
@@ -340,7 +457,10 @@ module.exports = {
   getCurrentConsultantById,
   updateConsultantProfileImageById,
   updateConsultantCINById,
-  updateConsultantRIBById
+  updateConsultantRIBById,
+  forgotPassword,
+  resetPassword,
+  updatePassword
 };
 
 const uploadFileToCloudinary = async (file, folderName) => {
