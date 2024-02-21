@@ -78,15 +78,15 @@ const getConsultantMissionsValidated = async (req, res) => {
   try {
     const preRegistartionMissions = await preRegistartion.find({
       userId: id,
-      "missionInfo.status": "VALID",
-      "missionInfo.status": "COMPLETED",
-      "missionInfo.status": "REJECTED",
+      "missionInfo.status": {
+        $in: ["VALID", "COMPLETED", "REJECTED"],
+      },
     });
     const newMissions = await newMission.find({
       userId: id,
-      status: "VALID",
-      status: "COMPLETED",
-      status: "REJECTED",
+      status: {
+        $in: ["VALID", "COMPLETED", "REJECTED"],
+      },
     });
     const missions = preRegistartionMissions.concat(newMissions);
     return res.status(200).json({
