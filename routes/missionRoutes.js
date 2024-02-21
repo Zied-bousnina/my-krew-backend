@@ -6,7 +6,8 @@ const {
   isResetTokenValid,
 } = require("../security/Rolemiddleware");
 
-const { createMission } = require("../controllers/mission.controller");
+const { createMission, updateTjm } = require("../controllers/mission.controller");
+const { UpdateInformationClientAndPersonalConsultantInfo } = require("../controllers/preregistration.Controller");
 
 router.post(
   "/createMission",
