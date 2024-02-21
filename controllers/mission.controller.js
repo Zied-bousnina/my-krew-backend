@@ -66,7 +66,7 @@ const createMission = async (req, res) => {
         },
       },
       status: "PENDING",
-      mongoose: savedContractProcess._id,
+      contractProcess: savedContractProcess._id,
     });
     const savedMission = await mission.save();
     const user = await User.findById(req.user.id);
