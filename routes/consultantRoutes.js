@@ -14,7 +14,7 @@ const {
   getConsultantMissionsWaitingContact,
   getConsultantLastMission,
 } = require("../controllers/consultant.controller");
-const { createCra } = require("../controllers/cra.controller");
+const { createCra, craAlreadyCreatedForCurrentMonth } = require("../controllers/cra.controller");
 
 router.get(
   "/getAllMissions/:id",
@@ -50,5 +50,11 @@ router.post(
   passport.authenticate("jwt", { session: false }),
   isRole(ROLES.CONSULTANT),
   createCra
+);
+router.get(
+  "/craAlreadyCreated/:id",
+  passport.authenticate("jwt", { session: false }),
+  isRole(ROLES.CONSULTANT),
+  craAlreadyCreatedForCurrentMonth
 );
 module.exports = router;

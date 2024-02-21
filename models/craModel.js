@@ -8,6 +8,10 @@ const craSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "user",
   },
+  missionId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "newMission",
+  },
   craFile: {
     type: String,
     default:"default.pdf"

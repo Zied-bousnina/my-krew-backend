@@ -6,13 +6,19 @@ const {
   isResetTokenValid,
 } = require("../security/Rolemiddleware");
 
-const { createMission } = require("../controllers/mission.controller");
+const { createMission, updateTjm } = require("../controllers/mission.controller");
 
 router.post(
   "/createMission",
   passport.authenticate("jwt", { session: false }),
   isRole(ROLES.CONSULTANT),
   createMission
+);
+router.put(
+  "/updateTjm/:id",
+  passport.authenticate("jwt", { session: false }),
+  isRole(ROLES.CONSULTANT),
+  updateTjm
 );
 
 module.exports = router;
