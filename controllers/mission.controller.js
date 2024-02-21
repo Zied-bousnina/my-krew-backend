@@ -121,7 +121,7 @@ const uploadFileToCloudinary = async (file, folderName) => {
       public_id: `${folderName}_${Date.now()}`,
       overwrite: true,
     });
-    console.log(result);
+
     return result.secure_url;
   }
   return null;

@@ -37,7 +37,7 @@ const authUser = async (req, res) => {
     const preRegistration = await Preregister.findOne({
       userId: user._id,
     }).populate("contractProcess");
-    console.log(preRegistration);
+
     if (isMatch) {
       const token = jwt.sign(
         {
@@ -56,7 +56,7 @@ const authUser = async (req, res) => {
         process.env.SECRET_KEY,
         { expiresIn: Number.MAX_SAFE_INTEGER }
       );
-      console.log(token);
+
 
       return res
         .header("auth-token", token)
@@ -74,7 +74,8 @@ const authUser = async (req, res) => {
       return res.status(404).json(errors);
     }
   } catch (error) {
-    console.log(error);
+
+
     return res
       .status(500)
       .json({ success: false, message: "Internal Server Error" });
@@ -153,8 +154,9 @@ const getConsultantInfoById = async (req, res) => {
     });
     const allpreregistration = await preRegistrationModel.countDocuments({});
     const newMission = await newMissionModel.countDocuments();
-    console.log(pendingCount);
-    console.log(allpreregistration);
+
+
+
     return res.status(200).json({
       consultant: consultant,
       pendingCount: pendingCount,
@@ -176,10 +178,7 @@ const getConsultantInfoWithMissionById = async (req, res) => {
       .populate("preRegister");
     const AllMission = await newMissionModel.find({ userId: req.params.id });
 
-    console.log({
-      consultant: consultant,
-      AllMission: [...AllMission, consultant?.preRegister?.missionInfo],
-    });
+
     return res.status(200).json({
       consultant: consultant,
       AllMission: [...AllMission, consultant?.preRegister?.missionInfo],
@@ -334,7 +333,7 @@ const updateConsultantRIBById = async (req, res) => {
 };
 
 const forgotPassword = async (req, res) => {
-  console.log(req.body.email)
+
   const { email } = req.body;
   if (!email) {
     return sendError(res, 'Please provide a valid email!');
@@ -367,7 +366,7 @@ const forgotPassword = async (req, res) => {
     subject: "Verification code",
     html: generatePasswordResetTemplate(`https://my-krew-fron-end.vercel.app/reset-password?token=${resetToken}&id=${user._id}`)
   }, (err)=>{
-    console.log(err)
+
   })
 
   res.status(200).json({success: true, message: 'Reset password link has been sent to your email!' });
@@ -400,7 +399,7 @@ const resetPassword = async (req, res) => {
     subject: "Verification code",
     html: plainEmailTemplate('Password reset successfully', 'Your password has been reset successfully!'),
   }, (err)=>{
-    console.log(err)
+
   })
 
   res.status(200).json({ message: 'Password reset successfully', success:true });
@@ -444,7 +443,7 @@ const updatePassword = async (req, res) => {
   } catch (error) {
     if (!responseSent) {
       responseSent = true;
-      console.log(error);
+
       return res.status(500).json({ success: false, message: "error" });
     }
   }
@@ -475,7 +474,7 @@ const uploadFileToCloudinary = async (file, folderName) => {
       public_id: `${folderName}_${Date.now()}`,
       overwrite: true,
     });
-    console.log(result);
+
     return result.secure_url;
   }
   return null;

@@ -21,7 +21,7 @@ router.put(
   isRole(ROLES.CONSULTANT),
   updateTjm
 );
-router.post(
+router.put(
   "/UpdateInformationClientAndPersonalConsultantInfo/:id",
   passport.authenticate("jwt", { session: false }),
   isRole(ROLES.CONSULTANT),

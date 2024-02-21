@@ -7,7 +7,7 @@ const moment = require('moment');
 const ContractProcess = require('../models/contractModel.js');
 const newMissionModel = require('../models/newMissionModel.js');
 const createPreRegistration1 = async (req, res) => {
-    console.log(req.body)
+
     try {
         const { errors, isValid } = preregistrationStep1Validation(req.body);
         if (!isValid) {
@@ -53,7 +53,7 @@ const createPreRegistration1 = async (req, res) => {
 
 
 const createPreRegistration2 = async (req, res) => {
-    console.log("vvvvvvvvvvvvvv",req)
+
     try {
         const {
             cin,
@@ -72,7 +72,7 @@ const createPreRegistration2 = async (req, res) => {
                 public_id: `${folderName}_${Date.now()}`,
                 overwrite: true,
               });
-              console.log(result);
+
               return result.secure_url;
             }
             return null;
@@ -96,7 +96,7 @@ const createPreRegistration2 = async (req, res) => {
         const options = { new: true, upsert: true };
 
         const updatedPreRegistration = await preRegistrationModel.findOneAndUpdate(query, update, options);
-        console.log(updatedPreRegistration)
+
 
         return res.status(200).json(updatedPreRegistration);
     }
@@ -107,7 +107,7 @@ const createPreRegistration2 = async (req, res) => {
 }
 
 const createPreRegistration3 = async (req, res) => {
-    console.log(req.body)
+
     try {
 
         const {
@@ -137,7 +137,7 @@ const createPreRegistration3 = async (req, res) => {
         const options = { new: true, upsert: true };
 
         const updatedPreRegistration = await preRegistrationModel.findOneAndUpdate(query, update, options);
-console.log("updatedPreRegistration",updatedPreRegistration)
+
         return res.status(200).json(updatedPreRegistration);
     }
     catch (error) {
@@ -146,7 +146,8 @@ console.log("updatedPreRegistration",updatedPreRegistration)
     }
 };
 const createPreRegistration4 = async (req, res) => {
-    console.log(req.files)
+
+
     try {
         const {
             cin,
@@ -164,7 +165,7 @@ const createPreRegistration4 = async (req, res) => {
                 public_id: `${folderName}_${Date.now()}`,
                 overwrite: true,
               });
-              console.log(result);
+
               return result.secure_url;
             }
             return null;
@@ -190,7 +191,7 @@ const {simulationfile} = req.files;
         const options = { new: true, upsert: true };
 
         const updatedPreRegistration = await preRegistrationModel.findOneAndUpdate(query, update, options);
-console.log(updatedPreRegistration)
+
 
         return res.status(200).json(updatedPreRegistration);
     }
@@ -214,8 +215,7 @@ const getPendingPreregistration = async (req, res) => {
     try {
         const preRegistration = await preRegistrationModel.find({ status: { $in: ['PENDING', 'NOTVALIDATED'] } });
         const preRegistration2 = await newMissionModel.find({ status: { $in: ['PENDING', 'REJECTED'] } }).populate('userId').populate('preRegister')    ;
-        console.log("+++++++++++++++++++++++++++Preregistration 2", preRegistration2)
-        console.log("+++++++++++++++++++++++++++Preregistration 11111", preRegistration)
+
 
         return res.status(200).json(
             [...preRegistration, ...preRegistration2]
@@ -243,22 +243,26 @@ const getConsultantStats = async (req, res) => {
             if (user.missions && user.missions.length > 0) {
                 user.missions.forEach(mission => {
                     numberOfMissions++;
-                    const startDate = new Date(mission.missionInfo.startDate);
-                    const endDate = new Date(mission.missionInfo.endDate);
 
-                    if (startDate <= today && today <= endDate) {
-                        const tjm = mission.missionInfo.dailyRate;
-                        totalTJM += tjm;
+                    const missionInfo = mission.missionInfo;
+                    if (missionInfo && missionInfo.startDate && missionInfo.endDate) {
+                        const startDate = new Date(missionInfo.startDate);
+                        const endDate = new Date(missionInfo.endDate);
 
-                        if (startDate >= startOfYear) {
-                            totalRevenue += tjm;
+                        if (startDate <= today && today <= endDate) {
+                            const tjm = missionInfo.dailyRate;
+                            totalTJM += tjm;
+
+                            if (startDate >= startOfYear) {
+                                totalRevenue += tjm;
+                            }
                         }
                     }
                 });
             }
         });
 
-        console.log(numberOfMissions)
+        console.log(numberOfMissions);
         const averageTJM = numberOfMissions > 0 ? totalTJM / numberOfMissions : 0;
 
         return res.status(200).json({
@@ -270,7 +274,8 @@ const getConsultantStats = async (req, res) => {
         console.error('Erreur lors du calcul des statistiques des consultants :', error);
         return res.status(500).json({ message: 'Erreur interne du serveur' });
     }
-}
+};
+
 
 const validatePreregistrationClientInfo = async (req, res) => {
     try {
@@ -295,7 +300,7 @@ const validatePreregistrationClientInfo = async (req, res) => {
 
 
         } = req.body;
-        console.log("++++++++++++++++++",req.body)
+
 
         const preRegistration = await preRegistrationModel.findById(req.params.id);
         if (!preRegistration) {
@@ -318,7 +323,7 @@ const validatePreregistrationClientInfo = async (req, res) => {
             !carInfo
         ) {
             // If any of the fields is present, set validated to "VALIDATED"
-            console.log("validated",validated)
+
             validated = "VALIDATED";
 
             const newContractProcess = new ContractProcess();
@@ -390,7 +395,7 @@ const validatePreregistrationClientInfo = async (req, res) => {
             return res.status(404).json({ error: "preregister not found" });
         }
 
-        console.log(updatedPreRegistration)
+
         return res.status(200).json(updatedPreRegistration);
     } catch (error) {
         console.error('Erreur lors de la validation des informations du client de la pré-inscription :', error);
@@ -422,7 +427,7 @@ const UpdateInformationClientAndPersonalConsultantInfo = async (req, res) => {
 
             position
         } = req.body;
-        console.log("++++++++++++++++++",req.body)
+
         const uploadFileToCloudinary = async (file, folderName) => {
             if (file) {
               const result = await cloudinary.uploader.upload(file.path, {
@@ -431,7 +436,7 @@ const UpdateInformationClientAndPersonalConsultantInfo = async (req, res) => {
                 public_id: `${folderName}_${Date.now()}`,
                 overwrite: true,
               });
-              console.log(result);
+
               return result.secure_url;
             }
             return null;
@@ -442,10 +447,9 @@ const UpdateInformationClientAndPersonalConsultantInfo = async (req, res) => {
 
 
            } = req.files;
-           console.log("++++++++++++++++++",req.files)
-           console.log("+*----------------",req.params.id)
+
         const preRegistration = await preRegistrationModel.findById(req.params.id);
-        console.log("++++++++++++++++++",preRegistration)
+
         if (!preRegistration) {
             return res.status(404).json({ message: 'Pré-inscription non trouvée' });
         }
@@ -483,7 +487,7 @@ const UpdateInformationClientAndPersonalConsultantInfo = async (req, res) => {
             return res.status(404).json({ error: "preregister not found" });
         }
 
-        console.log(updatedPreRegistration)
+
         return res.status(200).json(updatedPreRegistration);
     } catch (error) {
         console.error('Erreur lors de la validation des informations du client de la pré-inscription :', error);
@@ -497,7 +501,7 @@ const UpdateInformationClientAndPersonalConsultantInfo = async (req, res) => {
 const validateProcessus = async (req, res) => {
     try {
       const { step, status } = req.body;
-      console.log('+++++++++++++++++++', req.body)
+
       const preRegistration = await preRegistrationModel.findById(req.params.id);
 
       if (!preRegistration) {
@@ -582,7 +586,7 @@ const validateProcessus = async (req, res) => {
       if (!updatedPreRegistration) {
         return res.status(404).json({ error: "preregister not found" });
       }
-        console.log(updatedPreRegistration)
+
         return res.status(200).json(updatedPreRegistration);
     }catch (error) {
       console.error('Erreur lors de la validation des informations du client de la pré-inscription :', error);
