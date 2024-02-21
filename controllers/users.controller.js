@@ -188,6 +188,25 @@ const getConsultantInfoWithMissionById = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+const getConsultantInfoWithMissionById2 = async (req, res) => {
+  try {
+
+    const preregistration = await preRegistrationModel.findById(req.params.id);
+    const consultant = await userModel
+      .findById(preregistration.userId)
+      .populate("preRegister");
+    const AllMission = await newMissionModel.find({ userId: preregistration.userId });
+
+
+    return res.status(200).json({
+      consultant: consultant,
+      AllMission: [...AllMission, consultant?.preRegister?.missionInfo],
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 
 const getCurrentConsultantById = async (req, res) => {
   try {
@@ -457,6 +476,7 @@ module.exports = {
   getConsultantById,
   getConsultantInfoById,
   getConsultantInfoWithMissionById,
+  getConsultantInfoWithMissionById2,
   getCurrentConsultantById,
   updateConsultantProfileImageById,
   updateConsultantCINById,

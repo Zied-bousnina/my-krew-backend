@@ -20,6 +20,7 @@ const {
   updateConsultantRIBById,
   resetPassword,
   forgotPassword,
+  getConsultantInfoWithMissionById2,
 } = require("../controllers/users.controller.js");
 const {
   createPreRegistration1,
@@ -123,6 +124,13 @@ router
     passport.authenticate("jwt", { session: false }),
     isRole(ROLES.CONSULTANT, ROLES.RH),
     getConsultantInfoWithMissionById
+  );
+  router
+  .route("/getConsultantInfoWithMissionById2/:id")
+  .get(
+    passport.authenticate("jwt", { session: false }),
+    isRole(ROLES.CONSULTANT, ROLES.RH),
+    getConsultantInfoWithMissionById2
   );
 router
   .route("/validateProcessus/:id")

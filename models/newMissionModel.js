@@ -6,6 +6,7 @@ const newMissionStatus = [
   "VALIDATED",
   "WAITINGCONTRACT",
   "NOTVALIDATED",
+
 ];
 
 const newMissionSchema = new mongoose.Schema({

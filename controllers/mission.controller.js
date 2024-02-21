@@ -2,6 +2,7 @@ const newMission = require("../models/newMissionModel");
 const cloudinary = require("../utils/uploadImage");
 const ContractProcess = require("../models/contractModel.js");
 const User = require("../models/userModel.js");
+const preRegistrationModel = require("../models/preRegistrationModel");
 
 const createMission = async (req, res) => {
   try {
@@ -107,10 +108,7 @@ const updateTjm = async (req, res) => {
     });
   }
 };
-module.exports = {
-  createMission,
-  updateTjm,
-};
+
 
 //*helper function
 const uploadFileToCloudinary = async (file, folderName) => {
@@ -125,4 +123,46 @@ const uploadFileToCloudinary = async (file, folderName) => {
     return result.secure_url;
   }
   return null;
+};
+
+
+
+const updateMissionStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    console.log("status",status);
+    console.log("id",id);
+
+
+    const missionPreregistration = await preRegistrationModel.find({userId:id});
+    if(missionPreregistration.length>0){
+      missionPreregistration[0].missionInfo.status = status;
+      const updatedMissionPreregistration = await missionPreregistration[0].save();
+    }
+    else {
+      const mission = await newMission.find({userId:id});
+      mission.status = status;
+      let updatedMission = await mission.save();
+    }
+    return res.status(200).json({
+      status: "success",
+      action: "mission.controller.js/updateMissionStatus",
+
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+      status: "error",
+      action: "mission.controller.js/updateMissionStatus",
+    });
+  }
+}
+
+
+module.exports = {
+  createMission,
+  updateTjm,
+  updateMissionStatus
 };
