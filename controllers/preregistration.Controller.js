@@ -218,7 +218,7 @@ const uploadedSimulatedFile=await uploadFileToCloudinary(simulationfile, "isSimu
       options
     );
 
-    const mission = newMission.findOne({ userId: req.user.id });
+    const mission = await newMission.findOne({ userId: req.user.id });
     mission.missionInfo={
         profession: { value: missionInfo.metier },
         industrySector: { value: missionInfo.secteur },
