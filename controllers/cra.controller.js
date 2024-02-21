@@ -1,14 +1,14 @@
 const cra = require("../models/craModel");
 const cloudinary = require("../utils/uploadImage");
 
-
 const createCra = async (req, res) => {
   try {
-    const craFile= await uploadFileToCloudinary(req.files.craFile, "cra")
+    const craFile = await uploadFileToCloudinary(req.files.craFile, "cra");
 
     const newCra = new cra({
       userId: req.user.id,
       craFile: craFile,
+      missionId: req.body.missionId,
     });
     const savedCra = await newCra.save();
     return res.status(201).json({
@@ -17,7 +17,7 @@ const createCra = async (req, res) => {
       data: savedCra,
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(500).json({
       action: "cra.controller.js/createCra",
       status: "error",
@@ -26,8 +26,37 @@ const createCra = async (req, res) => {
   }
 };
 
+const craAlreadyCreatedForCurrentMonth = async (req, res) => {
+  try {
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+    const findedCra = await cra.find({
+      userId: req.user.id,
+      missionId: req.params.id,
+      status: { $in: ["VALIDATED", "PENDING"] },
+      createdAt: {
+        $gte: new Date(`${currentYear}-${currentMonth}-01`),
+        $lt: new Date(`${currentYear}-${currentMonth}-31`),
+      },
+    });
+    return res.status(200).json({
+      action: "cra.controller.js/craAlreadyCreatedForCurrentMonth",
+      status: "success",
+      data: findedCra,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      action: "cra.controller.js/craAlreadyCreatedForCurrentMonth",
+      status: "error",
+      message: "Internal Server Error",
+    });
+  }
+};
+
 module.exports = {
-    createCra,
+  createCra,
+  craAlreadyCreatedForCurrentMonth,
 };
 
 //*helper function

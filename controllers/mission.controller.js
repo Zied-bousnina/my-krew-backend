@@ -86,8 +86,30 @@ const createMission = async (req, res) => {
   }
 };
 
+const updateTjm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { tjm } = req.body;
+    const mission = await newMission.findById(id);
+    mission.missionInfo.dailyRate.value = tjm;
+    const updatedMission = await mission.save();
+    return res.status(200).json({
+      status: "success",
+      action: "mission.controller.js/updateTjm",
+      data: updatedMission,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal Server Error",
+      status: "error",
+      action: "mission.controller.js/updateTjm",
+    });
+  }
+};
 module.exports = {
   createMission,
+  updateTjm,
 };
 
 //*helper function
