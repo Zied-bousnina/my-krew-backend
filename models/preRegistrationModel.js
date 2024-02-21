@@ -9,73 +9,115 @@ const preRegistartionSchema = mongoose.Schema({
     personalInfo: {
         firstName: {
             value: String,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String,
         },
         lastName: {
             value: String,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String
         },
         email: {
             value: String,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String
         },
         phoneNumber: {
             value: String,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String
         },
         dateOfBirth: {
             value: String,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String
         },
         location: {
             value: String,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String
         },
         nationality: {
             value: String,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String
         },
         socialSecurityNumber: {
             value: String,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String
         },
         identificationDocument: {
             value: String,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String
         },
         rib: {
             value: String,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String
         },
         ribDocument: {
             value: String,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String
         },
         carInfo: {
             hasCar: {
                 value: Boolean,
-                validated: Boolean,
+                 validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
                 causeNonValidation:String
             },
             drivingLicense: {
                 value: String,
-                validated: Boolean,
+                 validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
                 causeNonValidation:String
             },
             carRegistration: {
                 value: String,
-                validated: Boolean,
+                 validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
                 causeNonValidation:String
             },
         },
@@ -83,33 +125,51 @@ const preRegistartionSchema = mongoose.Schema({
     clientInfo: {
         company: {
             value: String,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String
         },
         clientContact: {
             firstName: {
                 value: String,
-                validated: Boolean,
+                 validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
                 causeNonValidation:String
             },
             lastName: {
                 value: String,
-                validated: Boolean,
+                 validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
                 causeNonValidation:String
             },
             position: {
                 value: String,
-                validated: Boolean,
+                 validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
                 causeNonValidation:String
             },
             email: {
                 value: String,
-                validated: Boolean,
+                 validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
                 causeNonValidation:String
             },
             phoneNumber: {
                 value: String,
-                validated: Boolean,
+                 validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
                 causeNonValidation:String
             },
         },
@@ -117,37 +177,58 @@ const preRegistartionSchema = mongoose.Schema({
     missionInfo: {
         profession: {
             value: String,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String
         },
         industrySector: {
             value: String,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String
         },
         finalClient: {
             value: String,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String
         },
         dailyRate: {
             value: Number,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String
         },
         startDate: {
             value: Date,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String
         },
         endDate: {
             value: Date,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String
         },
         isSimulationValidated: {
             value: String,
-            validated: Boolean,
+             validated: {
+                type: Boolean,
+                default: true, // Set the default value to true
+            },
             causeNonValidation:String
         },
         missionKilled: {

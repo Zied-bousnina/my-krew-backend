@@ -5,6 +5,7 @@ const cloudinary = require('../utils/uploadImage');
 const userModel = require('../models/userModel');
 const moment = require('moment');
 const ContractProcess = require('../models/contractModel.js');
+const newMissionModel = require('../models/newMissionModel.js');
 const createPreRegistration1 = async (req, res) => {
     console.log(req.body)
     try {
@@ -212,8 +213,13 @@ const getPreregistration = async (req, res) => {
 const getPendingPreregistration = async (req, res) => {
     try {
         const preRegistration = await preRegistrationModel.find({ status: { $in: ['PENDING', 'NOTVALIDATED'] } });
+        const preRegistration2 = await newMissionModel.find({ status: { $in: ['PENDING', 'REJECTED'] } }).populate('userId').populate('preRegister')    ;
+        console.log("+++++++++++++++++++++++++++Preregistration 2", preRegistration2)
+        console.log("+++++++++++++++++++++++++++Preregistration 11111", preRegistration)
 
-        return res.status(200).json(preRegistration);
+        return res.status(200).json(
+            [...preRegistration, ...preRegistration2]
+        );
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: "Internal Server Error" });
@@ -289,6 +295,7 @@ const validatePreregistrationClientInfo = async (req, res) => {
 
 
         } = req.body;
+        console.log("++++++++++++++++++",req.body)
 
         const preRegistration = await preRegistrationModel.findById(req.params.id);
         if (!preRegistration) {
@@ -311,6 +318,7 @@ const validatePreregistrationClientInfo = async (req, res) => {
             !carInfo
         ) {
             // If any of the fields is present, set validated to "VALIDATED"
+            console.log("validated",validated)
             validated = "VALIDATED";
 
             const newContractProcess = new ContractProcess();
@@ -373,6 +381,7 @@ const validatePreregistrationClientInfo = async (req, res) => {
                 'clientInfo.clientContact.email.causeNonValidation': clientContactemail,
 
                 'status': validated =="VALIDATED" && validateClient =="VALIDATED" ? "VALIDATED" : "PENDING",
+                'validationRH': validated =="VALIDATED" && validateClient =="VALIDATED" ? "VALIDATED" : "NOTVALIDATED",
             },
             { new: true }
         );
@@ -388,6 +397,102 @@ const validatePreregistrationClientInfo = async (req, res) => {
         return res.status(500).json({ message: 'Erreur interne du serveur' });
     }
 };
+
+const UpdateInformationClientAndPersonalConsultantInfo = async (req, res) => {
+    try {
+        const {
+            firstName,
+            lastName,
+            location,
+            email,
+            phoneNumber,
+            nationality,
+            socialSecurityNumber,
+            rib,
+            dateOfBirth,
+
+             // Client
+             firstNameClient,
+             lastNameClient,
+             emailClient,
+             phoneNumberClient,
+            company,
+
+
+
+            position
+        } = req.body;
+        console.log("++++++++++++++++++",req.body)
+        const uploadFileToCloudinary = async (file, folderName) => {
+            if (file) {
+              const result = await cloudinary.uploader.upload(file.path, {
+                resource_type: 'auto',
+                folder: folderName,
+                public_id: `${folderName}_${Date.now()}`,
+                overwrite: true,
+              });
+              console.log(result);
+              return result.secure_url;
+            }
+            return null;
+          };
+          const {
+            identificationDocument,
+            carInfo,ribDocument
+
+
+           } = req.files;
+           console.log("++++++++++++++++++",req.files)
+           console.log("+*----------------",req.params.id)
+        const preRegistration = await preRegistrationModel.findById(req.params.id);
+        console.log("++++++++++++++++++",preRegistration)
+        if (!preRegistration) {
+            return res.status(404).json({ message: 'Pré-inscription non trouvée' });
+        }
+        const updatedPreRegistration = await preRegistrationModel.findOneAndUpdate(
+            { _id: req.params.id },
+            {
+                'personalInfo.firstName.value': firstName,
+                'personalInfo.lastName.value': lastName,
+                'personalInfo.email.value': email,
+                'personalInfo.phoneNumber.value': phoneNumber ,
+                'personalInfo.dateOfBirth.value': dateOfBirth ,
+                'personalInfo.location.value': location,
+                'personalInfo.nationality.value': nationality ,
+                'personalInfo.socialSecurityNumber.value': socialSecurityNumber ,
+                'personalInfo.identificationDocument.value': await uploadFileToCloudinary(identificationDocument) ,
+                'personalInfo.rib.value': rib ,
+                'personalInfo.ribDocument.value': await uploadFileToCloudinary(ribDocument) ,
+                'personalInfo.carInfo.drivingLicense.value':carInfo? await uploadFileToCloudinary(carInfo ):null,
+                'personalInfo.carInfo.hasCar.value': carInfo ? true : false,
+
+                // client info
+                'clientInfo.company.value': company ,
+                'clientInfo.clientContact.position.value': position ,
+                'clientInfo.clientContact.firstName.value': firstNameClient ,
+                'clientInfo.clientContact.lastName.value': lastNameClient ,
+                'clientInfo.clientContact.phoneNumber.value': phoneNumberClient ,
+                'clientInfo.clientContact.emailClient.value': emailClient ,
+                'status':"PENDING",
+                'validationRH':"PENDING",
+            },
+            { new: true }
+        );
+
+        if (!updatedPreRegistration) {
+            return res.status(404).json({ error: "preregister not found" });
+        }
+
+        console.log(updatedPreRegistration)
+        return res.status(200).json(updatedPreRegistration);
+    } catch (error) {
+        console.error('Erreur lors de la validation des informations du client de la pré-inscription :', error);
+        return res.status(500).json({ message: 'Erreur interne du serveur' });
+    }
+};
+
+
+
 
 const validateProcessus = async (req, res) => {
     try {
@@ -441,15 +546,17 @@ const validateProcessus = async (req, res) => {
 
       if (allFieldsValidated) {
         // Update the status to 'VALIDATED'
-        console.log('All fields are validated');
+
         updatedPreRegistration.status = 'VALIDATED';
+        updatedPreRegistration.validationRH = 'VALIDATED';
         await updatedPreRegistration.save();
       }else {
         updatedPreRegistration.status = 'PENDING';
+        updatedPreRegistration.validationRH = 'PENDING';
         await updatedPreRegistration.save();
       }
 
-      console.log(updatedPreRegistration);
+
 
       return res.status(200).json(updatedPreRegistration);
     } catch (error) {
@@ -504,5 +611,6 @@ module.exports = {
     getConsultantStats,
     validatePreregistrationClientInfo,
     validateProcessus,
-    sendNote
+    sendNote,
+    UpdateInformationClientAndPersonalConsultantInfo
 }

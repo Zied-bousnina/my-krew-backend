@@ -177,10 +177,10 @@ router
   // Reset password
   router.post("/reset-password",isResetTokenValid,  resetPassword )
   router.route("/forgot-password").post( forgotPassword )
-  
+
   router.get("/verify-token", isResetTokenValid, (req, res)=> {
     res.json({success:true})
   })
-  
+
 
 module.exports = router;
