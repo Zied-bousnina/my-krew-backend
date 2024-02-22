@@ -303,7 +303,7 @@ const getConsultantStats = async (req, res) => {
       }
     });
 
-    console.log(numberOfMissions);
+
     const averageTJM = numberOfMissions > 0 ? totalTJM / numberOfMissions : 0;
 
     return res.status(200).json({

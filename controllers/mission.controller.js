@@ -131,20 +131,15 @@ const updateMissionStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-    console.log("status",status);
-    console.log("id",id);
 
 
-    const missionPreregistration = await preRegistrationModel.find({userId:id});
-    if(missionPreregistration.length>0){
-      missionPreregistration[0].missionInfo.status = status;
-      const updatedMissionPreregistration = await missionPreregistration[0].save();
-    }
-    else {
-      const mission = await newMission.find({userId:id});
+
+
+
+      const mission = await newMission.findById(id);
       mission.status = status;
       let updatedMission = await mission.save();
-    }
+
     return res.status(200).json({
       status: "success",
       action: "mission.controller.js/updateMissionStatus",

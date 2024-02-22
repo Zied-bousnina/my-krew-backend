@@ -34,9 +34,10 @@ const authUser = async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(req.body.password, user.password);
-    const preRegistration = await Preregister.findOne({
+    const preRegistration = await Preregister.find({
       userId: user._id,
     }).populate("contractProcess");
+    console.log('++++++++++++++++++++++', preRegistration)
 
     if (isMatch) {
       const token = jwt.sign(
@@ -119,6 +120,7 @@ const getAllConsultant = async (req, res) => {
     const consultants = await userModel
       .find({ role: "CONSULTANT" })
       .populate("preRegister");
+
     return res.status(200).json(consultants);
   } catch (error) {
     console.error(error);
@@ -175,10 +177,10 @@ const getConsultantInfoWithMissionById = async (req, res) => {
   try {
     const consultant = await userModel
       .findById(req.params.id)
-      .populate("preRegister");
+      .populate("preRegister").populate("missions");
     const AllMission = await newMissionModel.find({ userId: req.params.id });
 
-
+console.log(consultant?.missions)
     return res.status(200).json({
       consultant: consultant,
       AllMission: [...AllMission, consultant?.preRegister?.missionInfo],

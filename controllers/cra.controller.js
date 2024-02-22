@@ -17,7 +17,7 @@ const createCra = async (req, res) => {
       data: savedCra,
     });
   } catch (error) {
-    console.log(error);
+
     return res.status(500).json({
       action: "cra.controller.js/createCra",
       status: "error",
@@ -45,7 +45,7 @@ const craAlreadyCreatedForCurrentMonth = async (req, res) => {
       data: findedCra,
     });
   } catch (error) {
-    console.log(error);
+
     return res.status(500).json({
       action: "cra.controller.js/craAlreadyCreatedForCurrentMonth",
       status: "error",
@@ -68,7 +68,7 @@ const uploadFileToCloudinary = async (file, folderName) => {
       public_id: `${folderName}_${Date.now()}`,
       overwrite: true,
     });
-    console.log(result);
+
     return result.secure_url;
   }
   return null;
