@@ -13,6 +13,7 @@ const {
   getConsultantMissionsNotValidated,
   getConsultantMissionsWaitingContact,
   getConsultantLastMission,
+  getConsultantClosestEndDateMission,
 } = require("../controllers/consultant.controller");
 const { createCra, craAlreadyCreatedForCurrentMonth } = require("../controllers/cra.controller");
 
@@ -56,5 +57,11 @@ router.get(
   passport.authenticate("jwt", { session: false }),
   isRole(ROLES.CONSULTANT),
   craAlreadyCreatedForCurrentMonth
+);
+router.get(
+  "/getClosestEndDateMission/:id",
+  passport.authenticate("jwt", { session: false }),
+  isRole(ROLES.CONSULTANT),
+  getConsultantClosestEndDateMission
 );
 module.exports = router;

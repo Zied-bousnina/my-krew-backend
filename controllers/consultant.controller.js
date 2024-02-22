@@ -4,9 +4,7 @@ const preRegistartion = require("../models/preRegistrationModel");
 const getConsultantMissions = async (req, res) => {
   const { id } = req.params;
   try {
-    const preRegistartionMission = await preRegistartion.find({ userId: id });
-    const newMissions = await newMission.find({ userId: id });
-    const missions = preRegistartionMission.concat(newMissions);
+    const missions = await newMission.find({ userId: id });
     return res.status(200).json({
       action: "consultant.controller.js/getConsultantMissions",
       status: "success",
@@ -24,15 +22,10 @@ const getConsultantMissions = async (req, res) => {
 const getConsultantMissionsPending = async (req, res) => {
   const { id } = req.params;
   try {
-    const preRegistartionMissions = await preRegistartion.find({
-      userId: id,
-      "missionInfo.status": "PENDING",
-    });
-    const newMissions = await newMission.find({
+    const missions = await newMission.find({
       userId: id,
       status: "PENDING",
     });
-    const missions = preRegistartionMissions.concat(newMissions);
     return res.status(200).json({
       action: "consultant.controller.js/getConsultantMissionsPending",
       status: "success",
@@ -50,15 +43,10 @@ const getConsultantMissionsPending = async (req, res) => {
 const getConsultantMissionsWaitingContact = async (req, res) => {
   const { id } = req.params;
   try {
-    const preRegistartionMissions = await preRegistartion.find({
-      userId: id,
-      "missionInfo.status": "WAITINGCONTARCT",
-    });
-    const newMissions = await newMission.find({
+    const missions = await newMission.find({
       userId: id,
       status: "WAITINGCONTARCT",
     });
-    const missions = preRegistartionMissions.concat(newMissions);
     return res.status(200).json({
       action: "consultant.controller.js/getConsultantMissionsWaitingContact",
       status: "success",
@@ -76,19 +64,12 @@ const getConsultantMissionsWaitingContact = async (req, res) => {
 const getConsultantMissionsValidated = async (req, res) => {
   const { id } = req.params;
   try {
-    const preRegistartionMissions = await preRegistartion.find({
-      userId: id,
-      "missionInfo.status": {
-        $in: ["VALID", "COMPLETED", "REJECTED"],
-      },
-    });
-    const newMissions = await newMission.find({
+    const missions = await newMission.find({
       userId: id,
       status: {
         $in: ["VALID", "COMPLETED", "REJECTED"],
       },
     });
-    const missions = preRegistartionMissions.concat(newMissions);
     return res.status(200).json({
       action: "consultant.controller.js/getConsultantMissionsValidated",
       status: "success",
@@ -106,15 +87,10 @@ const getConsultantMissionsValidated = async (req, res) => {
 const getConsultantMissionsNotValidated = async (req, res) => {
   const { id } = req.params;
   try {
-    const preRegistartionMissions = await preRegistartion.find({
-      userId: id,
-      "missionInfo.status": "REJECTED",
-    });
-    const newMissions = await newMission.find({
+    const missions = await newMission.find({
       userId: id,
       status: "REJECTED",
     });
-    const missions = preRegistartionMissions.concat(newMissions);
     return res.status(200).json({
       action: "consultant.controller.js/getConsultantMissionsNotValidated",
       status: "success",
@@ -137,26 +113,43 @@ const getConsultantLastMission = async (req, res) => {
         userId: id,
       })
       .sort({ createdAt: -1 });
-    if (newMissions.length > 0)
+    if (newMissions.length > 0) {
       return res.status(200).json({
         action: "consultant.controller.js/getConsultantLastMission",
         status: "success",
         data: newMissions[newMissions.length - 1],
       });
-    else {
-      const missions = await preRegistartion
-        .find({
-          userId: id,
-        })
-        .sort({ createdAt: -1 })
-        .limit(1);
-
-      return res.status(200).json({
+    } else {
+      return res.status(404).json({
         action: "consultant.controller.js/getConsultantLastMission",
-        status: "success",
-        data: missions[0], // Return the first (and only) mission
+        status: "error",
+        message: "no mission found",
       });
     }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      action: "consultant.controller.js/getConsultantLastMission",
+      status: "error",
+      message: "Internal Server Error",
+    });
+  }
+};
+
+const getConsultantClosestEndDateMission = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const newMissions = await newMission
+      .find({
+        userId: id,
+        status: "VALID",
+      })
+      .sort({ "missionInfo.endDate.value": -1 });
+    return res.status(200).json({
+      action: "consultant.controller.js/getConsultantLastMission",
+      status: "success",
+      data: newMissions[0],
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -174,4 +167,5 @@ module.exports = {
   getConsultantMissionsValidated,
   getConsultantMissionsNotValidated,
   getConsultantLastMission,
+  getConsultantClosestEndDateMission,
 };
