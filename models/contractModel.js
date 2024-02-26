@@ -13,17 +13,17 @@ const contractProcessSchema = new mongoose.Schema({
     clientValidation: {
         type: String,
         enum: status,
-        default: "DESACTIVATED"
+        default: "PENDING"
     },
     jobCotractEdition: {
         type: String,
         enum: status,
-        default: "DESACTIVATED"
+        default: "PENDING"
     },
     contractValidation: {
         type: String,
         enum: status,
-        default: "DESACTIVATED"
+        default: "PENDING"
     },
     statut: {
         type: String,

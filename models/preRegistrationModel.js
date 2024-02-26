@@ -245,7 +245,6 @@ const preRegistartionSchema = mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-
     pendingToKillDate: {
         type: Date,
     },
@@ -258,7 +257,6 @@ const preRegistartionSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'contractProcess'
     },
-
     validationRH: {
         type: String,
         enum: ['VALIDATED', 'PENDING', 'NOTVALIDATED'],
@@ -289,10 +287,6 @@ const preRegistartionSchema = mongoose.Schema({
         type: String,
 
     },
-
-
-
-
 });
 
 module.exports = PreRegistration = mongoose.model("preRegistartion", preRegistartionSchema);

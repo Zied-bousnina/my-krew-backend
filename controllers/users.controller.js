@@ -183,7 +183,7 @@ const getConsultantInfoWithMissionById = async (req, res) => {
 console.log(consultant?.missions)
     return res.status(200).json({
       consultant: consultant,
-      AllMission: [...AllMission, consultant?.preRegister?.missionInfo],
+      AllMission: AllMission,
     });
   } catch (error) {
     console.error(error);

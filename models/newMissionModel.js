@@ -14,7 +14,6 @@ const newMissionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "user",
   },
-
   clientInfo: {
     company: {
       value: String,
@@ -87,7 +86,6 @@ const newMissionSchema = new mongoose.Schema({
       causeNonValidation: String,
     },
   },
-
   missionKilled: {
     type: Boolean,
     default: false,
