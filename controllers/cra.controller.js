@@ -1,7 +1,10 @@
+const contractModel = require("../models/contractModel");
+const craModel = require("../models/craModel");
 const cra = require("../models/craModel");
 const cloudinary = require("../utils/uploadImage");
 
 const createCra = async (req, res) => {
+  console.log(req)
   try {
     const craFile = await uploadFileToCloudinary(req.files.craFile, "cra");
 
@@ -54,9 +57,62 @@ const craAlreadyCreatedForCurrentMonth = async (req, res) => {
   }
 };
 
+const GetCraByMissionId = async (req, res) => {
+  // console.log(req)
+  try {
+    const missionId = req.params.missionId;
+
+    // Assuming your cra model is named "craModel"
+    const cra = await craModel.findOne({ missionId: missionId }) .populate({
+      path: 'userId',
+      populate: {
+        path: 'preRegister',
+        // You can specify additional options for populating the 'preRegister' field here if needed
+      }
+    }).populate("contractProcess");;
+
+    if (!cra) {
+      return res.status(404).json({ error: "Cra not found for the given missionId" });
+    }
+
+    return res.status(200).json({ cra: cra });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const validateCRA = async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    const CRA = await craModel.findById(req.params.id );
+
+    if (!CRA) {
+      return res.status(404).json({ message: "CRA non trouvée" });
+    }
+    console.log(status)
+
+    CRA.status = status == "Validée" ? "VALIDATED" : status == "En cours" ? "PENDING" : status == "refusé" ? "NOTVALIDATED" : "NOTVALIDATED";
+
+    await CRA.save();
+    console.log(CRA)
+
+    return res.status(200).json(CRA);
+  } catch (error) {
+    console.error("Erreur lors de la validation des informations du client de la pré-inscription :", error);
+    return res.status(500).json({ message: "Erreur interne du serveur" });
+  }
+};
+
+
+
+
 module.exports = {
   createCra,
   craAlreadyCreatedForCurrentMonth,
+  GetCraByMissionId,
+  validateCRA
 };
 
 //*helper function

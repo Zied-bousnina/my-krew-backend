@@ -36,6 +36,7 @@ const {
   getPendingMissions,
   getPreregistrationFirstMission,
 } = require("../controllers/preregistration.Controller.js");
+const { GetCraByMissionId, validateCRA } = require("../controllers/cra.controller.js");
 const router = express.Router();
 const storage = multer.diskStorage({});
 
@@ -133,12 +134,26 @@ router
     isRole(ROLES.CONSULTANT, ROLES.RH),
     getConsultantInfoById
   );
+  router
+  .route("/GetCraByMissionId/:missionId")
+  .get(
+    passport.authenticate("jwt", { session: false }),
+    isRole(ROLES.CONSULTANT, ROLES.RH),
+    GetCraByMissionId
+  );
 router
   .route("/getConsultantInfoWithMissionById/:id")
   .get(
     passport.authenticate("jwt", { session: false }),
     isRole(ROLES.CONSULTANT, ROLES.RH),
     getConsultantInfoWithMissionById
+  );
+  router
+  .route("/ValidateCRA/:id")
+  .put(
+    passport.authenticate("jwt", { session: false }),
+    isRole(ROLES.CONSULTANT, ROLES.RH),
+    validateCRA
   );
   router
   .route("/getConsultantInfoWithMissionById2/:id")
