@@ -337,7 +337,6 @@ module.exports = {
   updateTjm,
   updateMissionStatus,
   getMissionById,
-  getMissionById,
   getConsultantInfoById,
   validateProcessus,
   killMission

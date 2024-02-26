@@ -33,7 +33,6 @@ const userSchema = new mongoose.Schema(
       ref: "preRegistartion",
       default: null,
     },
-
     missions: [
       {
         type: mongoose.Schema.Types.ObjectId,

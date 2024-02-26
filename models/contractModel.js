@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 mongoose.set("strictQuery", false);
 
-
 const status = ['DESACTIVATED','PENDING','VALIDATED','NOTVALIDATED'];
 
 const contractProcessSchema = new mongoose.Schema({
