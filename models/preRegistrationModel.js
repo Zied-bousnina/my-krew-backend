@@ -258,7 +258,6 @@ const preRegistartionSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'contractProcess'
     },
-
     validationRH: {
         type: String,
         enum: ['VALIDATED', 'PENDING', 'NOTVALIDATED'],
@@ -273,7 +272,6 @@ const preRegistartionSchema = mongoose.Schema({
         type: String,
         enum: ['VALIDATED', 'PENDING', 'NOTVALIDATED'],
         default: 'PENDING',
-
     },
     validateContractTravail : {
         type: String,
@@ -285,9 +283,8 @@ const preRegistartionSchema = mongoose.Schema({
         enum: ['VALIDATED', 'PENDING', 'NOTVALIDATED'],
         default: 'PENDING',
     },
-    noteAuClient :  {
+    noteAuClient :{
         type: String,
-
     },
 
 

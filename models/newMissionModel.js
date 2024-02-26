@@ -6,7 +6,6 @@ const newMissionStatus = [
   "VALIDATED",
   "WAITINGCONTRACT",
   "NOTVALIDATED",
-
 ];
 
 const newMissionSchema = new mongoose.Schema({
@@ -21,7 +20,6 @@ const newMissionSchema = new mongoose.Schema({
       validated: Boolean,
       causeNonValidation: String,
     },
-
     clientContact: {
       firstName: {
         value: String,
