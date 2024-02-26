@@ -13,77 +13,80 @@ const newMissionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "user",
   },
+
   clientInfo: {
     company: {
       value: String,
-      validated: Boolean,
-      causeNonValidation: String,
+      validated: { type: Boolean, default: null },
+      causeNonValidation: { type: String, default: null },
     },
+
     clientContact: {
       firstName: {
         value: String,
-        validated: Boolean,
-        causeNonValidation: String,
+        validated: { type: Boolean, default: null },
+        causeNonValidation: { type: String, default: null },
       },
       lastName: {
         value: String,
-        validated: Boolean,
-        causeNonValidation: String,
+        validated: { type: Boolean, default: null },
+        causeNonValidation: { type: String, default: null },
       },
       position: {
         value: String,
-        validated: Boolean,
-        causeNonValidation: String,
+        validated: { type: Boolean, default: null },
+        causeNonValidation: { type: String, default: null },
       },
       email: {
         value: String,
-        validated: Boolean,
-        causeNonValidation: String,
+        validated: { type: Boolean, default: null },
+        causeNonValidation: { type: String, default: null },
       },
       phoneNumber: {
         value: String,
-        validated: Boolean,
-        causeNonValidation: String,
+        validated: { type: Boolean, default: null },
+        causeNonValidation: { type: String, default: null },
       },
     },
   },
   missionInfo: {
     profession: {
       value: String,
-      validated: Boolean,
-      causeNonValidation: String,
+      validated: { type: Boolean, default: null },
+      causeNonValidation: { type: String, default: null },
     },
     industrySector: {
       value: String,
-      validated: Boolean,
-      causeNonValidation: String,
+      validated: { type: Boolean, default: null },
+      causeNonValidation: { type: String, default: null },
     },
     finalClient: {
       value: String,
-      validated: Boolean,
-      causeNonValidation: String,
+      validated: { type: Boolean, default: null },
+      causeNonValidation: { type: String, default: null },
     },
     dailyRate: {
       value: Number,
-      validated: Boolean,
-      causeNonValidation: String,
+      validated: { type: Boolean, default: null },
+      causeNonValidation: { type: String, default: null },
     },
     startDate: {
       value: Date,
-      validated: Boolean,
-      causeNonValidation: String,
+      validated: { type: Boolean, default: null },
+      causeNonValidation: { type: String, default: null },
     },
     endDate: {
       value: Date,
-      validated: Boolean,
-      causeNonValidation: String,
+      validated: { type: Boolean, default: null },
+      causeNonValidation: { type: String, default: null },
     },
     isSimulationValidated: {
       value: String,
-      validated: Boolean,
-      causeNonValidation: String,
+      validated: { type: Boolean, default: null },
+      causeNonValidation: { type: String, default: null },
     },
   },
+
   missionKilled: {
     type: Boolean,
     default: false,
@@ -97,15 +100,6 @@ const newMissionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "contractProcess",
   },
-  noteAuClient :  {
-    type: String,
-
-},
-
-
-},{
-  timestamps: true,
-}
-);
+});
 
 module.exports = mongoose.model("newMission", newMissionSchema);
