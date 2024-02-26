@@ -21,11 +21,11 @@ const craSchema = new mongoose.Schema({
     enum: status,
     default: "PENDING",
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
 
+
+}
+,{
+  timestamps: true,
 });
 
 module.exports = mongoose.model("cra", craSchema);

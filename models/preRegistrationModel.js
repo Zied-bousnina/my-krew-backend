@@ -245,7 +245,6 @@ const preRegistartionSchema = mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-
     pendingToKillDate: {
         type: Date,
     },
@@ -286,10 +285,9 @@ const preRegistartionSchema = mongoose.Schema({
     noteAuClient :{
         type: String,
     },
-
-
-
-
-});
+}
+,{
+    timestamps: true,
+  });
 
 module.exports = PreRegistration = mongoose.model("preRegistartion", preRegistartionSchema);

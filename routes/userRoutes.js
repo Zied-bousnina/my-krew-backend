@@ -33,6 +33,8 @@ const {
   createPreRegistration3,
   validateProcessus,
   sendNote,
+  getPendingMissions,
+  getPreregistrationFirstMission,
 } = require("../controllers/preregistration.Controller.js");
 const router = express.Router();
 const storage = multer.diskStorage({});
@@ -83,6 +85,13 @@ router
     isRole(ROLES.CONSULTANT, ROLES.RH),
     getPreregistration
   );
+  router
+  .route("/preRegistration/getPreregistrationFirstMission")
+  .get(
+    passport.authenticate("jwt", { session: false }),
+    isRole(ROLES.CONSULTANT, ROLES.RH),
+    getPreregistrationFirstMission
+  );
 router
   .route("/consultants/getAllConsultant")
   .get(
@@ -96,6 +105,12 @@ router
     passport.authenticate("jwt", { session: false }),
     isRole(ROLES.CONSULTANT, ROLES.RH),
     getPendingPreregistration
+  );
+  router
+  .route("/missions/getPendingMissions")
+  .get(
+
+    getPendingMissions
   );
 router
   .route("/getConsultantStats")

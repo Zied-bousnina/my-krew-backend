@@ -14,13 +14,13 @@ const virementSchema = new mongoose.Schema({
     montant:{
         type: Number,
     },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    }
 
 
 
-});
+
+},{
+    timestamps: true,
+  }
+  );
 
 module.exports = mongoose.model("virement", virementSchema);

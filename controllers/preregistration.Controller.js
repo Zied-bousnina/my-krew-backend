@@ -251,6 +251,26 @@ const getPreregistration = async (req, res) => {
   }
 };
 
+const getPreregistrationFirstMission = async (req, res) => {
+  try {
+    const preRegistration = await preRegistrationModel.findOne({
+      userId: req.user.id,
+    });
+    const firstMission = await newMissionModel.findOne({ userId:req.user.id }).sort({ createdAt: 1 })
+    .populate({
+      path: 'userId',
+      populate: {
+        path: 'preRegister',
+        // You can specify additional options for populating the 'preRegister' field here if needed
+      }
+    }).populate("contractProcess");
+    ;
+    return res.status(200).json(firstMission);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 const getPendingPreregistration = async (req, res) => {
   try {
     const preRegistration = await preRegistrationModel.find({
@@ -268,6 +288,25 @@ const getPendingPreregistration = async (req, res) => {
   }
 };
 
+const getPendingMissions = async (req, res) => {
+  try {
+    const Missions = await newMissionModel.find({
+      status: { $in: ["PENDING"] },
+    }).populate({
+      path: 'userId',
+      populate: {
+        path: 'preRegister',
+        // You can specify additional options for populating the 'preRegister' field here if needed
+      }
+    })
+    ;
+
+    return res.status(200).json(Missions);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 const getConsultantStats = async (req, res) => {
   try {
     const users = await userModel.find({ role: "CONSULTANT" });
@@ -462,6 +501,87 @@ const validatePreregistrationClientInfo = async (req, res) => {
     return res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
+const validateMissionClientInfo = async (req, res) => {
+  try {
+    const {
+      startDate, profession, isSimulationValidated, industrySector, finalClient, endDate, dailyRate,
+      // Client ---------------------
+      clientContactFirstName, clientContactLastName, clientContactPhoneNumber, clientContactemail, company, position,
+    } = req.body;
+
+
+    const mission = await newMissionModel.findById(req.params.id);
+    if (!mission) {
+      return res.status(404).json({ message: "Mission  non trouvée" });
+    }
+
+    let validated = "PENDING"; // Initialize validated variable
+
+    if (
+      !startDate&& !profession&& !isSimulationValidated&& !industrySector&& !finalClient&& !endDate&& !dailyRate&& !clientContactFirstName &&
+      !clientContactLastName && !clientContactPhoneNumber && !clientContactemail && !company && !position
+    ) {
+      // If any of the fields is present, set validated to "VALIDATED"
+      validated = "VALIDATED";
+
+    }
+
+
+    const updatedMission = await newMissionModel.findOneAndUpdate(
+      { _id: req.params.id },
+      {
+        // Mission
+        "missionInfo.profession.validated": (profession === "" ||profession ==undefined) ? true : false,
+        "missionInfo.profession.causeNonValidation": profession,
+        "missionInfo.industrySector.validated": (industrySector === ""||industrySector ==undefined) ? true : false,
+        "missionInfo.industrySector.causeNonValidation": industrySector,
+        "missionInfo.finalClient.validated": (finalClient === "" ||finalClient ==undefined) ? true : false,
+        "missionInfo.finalClient.causeNonValidation": finalClient,
+        "missionInfo.dailyRate.validated": (dailyRate === "" ||dailyRate ==undefined) ? true : false,
+        "missionInfo.dailyRate.causeNonValidation": dailyRate,
+        "missionInfo.startDate.validated":( startDate === "" ||startDate ==undefined) ? true : false,
+        "missionInfo.startDate.causeNonValidation": startDate,
+        "missionInfo.endDate.validated":( endDate === "" ||endDate ==undefined) ? true : false,
+        "missionInfo.endDate.causeNonValidation": endDate,
+        "missionInfo.isSimulationValidated.validated":( isSimulationValidated === "" ||isSimulationValidated ==undefined)? true : false,
+        "missionInfo.isSimulationValidated.causeNonValidation": isSimulationValidated,
+
+        // client info
+        "clientInfo.company.validated":( company === "" ||company ==undefined)? true : false,
+        "clientInfo.company.causeNonValidation": company,
+        "clientInfo.clientContact.position.validated":(position === "" ||position ==undefined) ? true : false,
+        "clientInfo.clientContact.position.causeNonValidation": position,
+        "clientInfo.clientContact.firstName.validated": (clientContactFirstName === "" ||clientContactFirstName ==undefined) ? true : false,
+        "clientInfo.clientContact.firstName.causeNonValidation": clientContactFirstName,
+        "clientInfo.clientContact.lastName.validated": (clientContactLastName === ""  ||clientContactLastName ==undefined)? true : false,
+        "clientInfo.clientContact.lastName.causeNonValidation": clientContactLastName,
+        "clientInfo.clientContact.phoneNumber.validated": (clientContactPhoneNumber === ""  ||clientContactPhoneNumber ==undefined)? true : false,
+        "clientInfo.clientContact.phoneNumber.causeNonValidation": clientContactPhoneNumber,
+        "clientInfo.clientContact.email.validated":( clientContactemail === "" ||clientContactemail ==undefined)? true : false,
+        "clientInfo.clientContact.email.causeNonValidation": clientContactemail,
+
+        status:
+          validated == "VALIDATED"
+            ? "WAITINGCONTRACT"
+            : "PENDING",
+
+      },
+      { new: true }
+    );
+
+    if (!updatedMission) {
+      return res.status(404).json({ error: "preregister not found" });
+    }
+
+    return res.status(200).json(updatedMission);
+  } catch (error) {
+    console.error(
+      "Erreur lors de la validation des informations du client de la pré-inscription :",
+      error
+    );
+    return res.status(500).json({ message: "Erreur interne du serveur" });
+  }
+};
 
 const UpdateInformationClientAndPersonalConsultantInfo = async (req, res) => {
   try {
@@ -484,9 +604,20 @@ const UpdateInformationClientAndPersonalConsultantInfo = async (req, res) => {
       company,
 
       position,
-    } = req.body;
 
-    const uploadFileToCloudinary = async (file, folderName) => {
+      // Mission
+      metier,
+      secteur,
+      client,
+
+      tjm,
+      debut,
+      fin
+
+    } = req.body;
+    console.log(req.body)
+
+    const uploadFileToCloudinary = async (file, folderName="d") => {
       if (file) {
         const result = await cloudinary.uploader.upload(file.path, {
           resource_type: "auto",
@@ -499,7 +630,8 @@ const UpdateInformationClientAndPersonalConsultantInfo = async (req, res) => {
       }
       return null;
     };
-    const { identificationDocument, carInfo, ribDocument } = req.files;
+    const { identificationDocument, carInfo, ribDocument,simulationfile } = req.files;
+    console.log(req.files)
 
     const preRegistration = await preRegistrationModel.findById(req.params.id);
 
@@ -521,10 +653,14 @@ const UpdateInformationClientAndPersonalConsultantInfo = async (req, res) => {
           await uploadFileToCloudinary(identificationDocument),
         "personalInfo.rib.value": rib,
         "personalInfo.ribDocument.value": await uploadFileToCloudinary(
-          ribDocument
+          ribDocument,
+          "ribDocument"
         ),
         "personalInfo.carInfo.drivingLicense.value": carInfo
-          ? await uploadFileToCloudinary(carInfo)
+          ? await uploadFileToCloudinary(
+            carInfo,
+            "carInfo"
+          )
           : null,
         "personalInfo.carInfo.hasCar.value": carInfo ? true : false,
 
@@ -540,10 +676,49 @@ const UpdateInformationClientAndPersonalConsultantInfo = async (req, res) => {
       },
       { new: true }
     );
+    console.log("675")
+    const firstMission = await newMissionModel.findOne({ userId: req.user.id }).sort({ createdAt: 1 });
+    console.log(firstMission)
+    const Mission = await newMissionModel.findOneAndUpdate(
+      { _id: firstMission?._id },
+      {
+
+        // client info
+        "clientInfo.company.value": company,
+        "clientInfo.clientContact.position.value": position,
+        "clientInfo.clientContact.firstName.value": firstNameClient,
+        "clientInfo.clientContact.lastName.value": lastNameClient,
+        "clientInfo.clientContact.phoneNumber.value": phoneNumberClient,
+        "clientInfo.clientContact.emailClient.value": emailClient,
+        status: "PENDING",
+
+
+        // Mission
+         [`missionInfo.profession.value`]: metier,
+        [`missionInfo.industrySector.value`]: secteur,
+        [`missionInfo.finalClient.value`]:client,
+        [`missionInfo.dailyRate.value`]: tjm,
+        [`missionInfo.startDate.value`]: debut,
+        [`missionInfo.endDate.value`]: fin,
+        [`missionInfo.isSimulationValidated.value`]:await uploadFileToCloudinary(simulationfile,"simulation"),
+        // metier,
+        // secteur,
+        // client,
+        // simulation,
+        // tjm,
+        // debut,
+        // fin
+      },
+      { new: true }
+    );
 
     if (!updatedPreRegistration) {
       return res.status(404).json({ error: "preregister not found" });
     }
+    if (!Mission) {
+      return res.status(404).json({ error: "mission not found" });
+    }
+
 
     return res.status(200).json(updatedPreRegistration);
   } catch (error) {
@@ -633,23 +808,26 @@ const validateProcessus = async (req, res) => {
 
 const sendNote = async (req, res) => {
   try {
+    // Find the mission by ID
     const { note } = req.body;
-    const preRegistration = await preRegistrationModel.findById(req.params.id);
-    if (!preRegistration) {
-      return res.status(404).json({ message: "Pré-inscription non trouvée" });
-    }
-    const updatedPreRegistration = await preRegistrationModel.findOneAndUpdate(
-      { _id: req.params.id },
-      { noteAuClient: note },
-      { new: true }
-    );
+    const missionId = req.params.id;
+    const mission = await newMissionModel.findById(missionId);
 
-    if (!updatedPreRegistration) {
-      return res.status(404).json({ error: "preregister not found" });
+    if (!mission) {
+      return res.status(404).json({ error: "Mission not found" });
     }
 
-    return res.status(200).json(updatedPreRegistration);
-  } catch (error) {
+
+    // Set missionKilled to true and update status to REJECTED
+    mission.missionKilled = true;
+    mission.status = "REJECTED";
+    mission.noteAuClient = note
+
+    // Save the updated mission
+    await mission.save();
+
+    res.status(200).json({ message: "Mission killed successfully" });
+  }catch (error) {
     console.error(
       "Erreur lors de la validation des informations du client de la pré-inscription :",
       error
@@ -658,15 +836,19 @@ const sendNote = async (req, res) => {
   }
 };
 
+
 module.exports = {
   createPreRegistration1,
   createPreRegistration2,
   createPreRegistration3,
   createPreRegistration4,
   getPreregistration,
+  getPreregistrationFirstMission,
   getPendingPreregistration,
+  getPendingMissions,
   getConsultantStats,
   validatePreregistrationClientInfo,
+  validateMissionClientInfo,
   validateProcessus,
   sendNote,
   UpdateInformationClientAndPersonalConsultantInfo,

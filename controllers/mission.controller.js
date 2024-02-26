@@ -3,6 +3,9 @@ const cloudinary = require("../utils/uploadImage");
 const ContractProcess = require("../models/contractModel.js");
 const User = require("../models/userModel.js");
 const preRegistrationModel = require("../models/preRegistrationModel");
+const newMissionModel = require("../models/newMissionModel");
+const userModel = require("../models/userModel.js");
+const contractModel = require("../models/contractModel.js");
 
 const createMission = async (req, res) => {
   try {
@@ -155,9 +158,187 @@ const updateMissionStatus = async (req, res) => {
   }
 }
 
+const getMissionById = async (req, res) => {
+  try {
+    const mission = await newMissionModel.findById(req.params.id).populate({
+      path: 'userId',
+      populate: {
+        path: 'preRegister',
+        // You can specify additional options for populating the 'preRegister' field here if needed
+      }
+    });
+    return res.status(200).json(mission);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const getConsultantInfoById = async (req, res) => {
+  try {
+
+    const Mission = await newMissionModel.findById(req.params.id).populate({
+      path: 'userId',
+      populate: {
+        path: 'preRegister',
+        // You can specify additional options for populating the 'preRegister' field here if needed
+      }
+    }).populate("contractProcess");
+    const consultant = await userModel
+      .findById(Mission?.userId?._id)
+      .populate("preRegister");
+    const pendingCount = await preRegistrationModel.countDocuments({
+      status: "PENDING",
+    });
+    const traiteCount = await preRegistrationModel.countDocuments({
+      status: "VALIDATED",
+    });
+    const RejeteCount = await preRegistrationModel.countDocuments({
+      status: "NOTVALIDATED",
+    });
+    const allpreregistration = await preRegistrationModel.countDocuments({});
+    const newMission = await newMissionModel.countDocuments();
+
+
+
+    return res.status(200).json({
+      consultant: consultant,
+      pendingCount: pendingCount,
+      allpreregistration: allpreregistration,
+      newMission: newMission,
+      traiteCount: traiteCount,
+      RejeteCount: RejeteCount,
+      Mission:Mission
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const validateProcessus = async (req, res) => {
+  try {
+    const { step, status } = req.body;
+
+    const preRegistration = await contractModel.findById(req.params.id);
+
+    if (!preRegistration) {
+      return res.status(404).json({ message: "Pré-inscription non trouvée" });
+    }
+
+    let updateField;
+
+    switch (step) {
+      case "Validation Informations Personnelles":
+        updateField = "contactClient";
+        break;
+      case "Prise de contact avec le client":
+        updateField = "clientValidation";
+        break;
+      case "Contrat de service validé avec le client":
+        updateField = "jobCotractEdition";
+        break;
+      default:
+        updateField = "contractValidation";
+        break;
+    }
+
+    const updatedPreRegistration = await contractModel.findOneAndUpdate(
+      { _id: req.params.id },
+      {
+        [updateField]:
+          status === "Validée"
+            ? "VALIDATED"
+            : status === "En cours"
+            ? "PENDING"
+            : status === "En attente"
+            ? "NOTVALIDATED"
+            : "NOTVALIDATED",
+      },
+      { new: true }
+    );
+
+    if (!updatedPreRegistration) {
+      return res.status(404).json({ error: "preregister not found" });
+    }
+
+   // Check if all fields are 'VALIDATED' and update the status accordingly
+   const allFieldsValidated = [
+    "contactClient",
+    "clientValidation",
+    "jobCotractEdition",
+    "contractValidation",
+  ].every((field) => updatedPreRegistration[field] === "VALIDATED");
+
+  if (allFieldsValidated) {
+    // Update the status to 'VALIDATED'
+console.log("yes")
+
+    updatedPreRegistration.statut = "VALIDATED";
+    const mission = await newMissionModel.findOne({ contractProcess: req.params.id }).exec();
+
+    console.log(mission)
+    mission.status = "VALID"
+    mission.missionKilled = false;
+    await mission.save()
+    await updatedPreRegistration.save();
+  } else {
+    updatedPreRegistration.statut = "PENDING";
+    const mission = await newMissionModel.findOne({ contractProcess: req.params.id }).exec();
+    mission.missionKilled = false;
+
+
+    console.log(mission)
+    mission.status = "WAITINGCONTRACT"
+    await mission.save()
+
+    await updatedPreRegistration.save();
+  }
+
+    return res.status(200).json(updatedPreRegistration);
+  } catch (error) {
+    console.error(
+      "Erreur lors de la validation des informations du client de la pré-inscription :",
+      error
+    );
+    return res.status(500).json({ message: "Erreur interne du serveur" });
+  }
+};
+
+const killMission = async (req, res) => {
+  console.log("yes")
+  const missionId = req.params.id; // Assuming you have the missionId in the request parameters
+
+  try {
+    // Find the mission by ID
+    const mission = await newMissionModel.findById(missionId);
+
+    if (!mission) {
+      return res.status(404).json({ error: "Mission not found" });
+    }
+
+
+    // Set missionKilled to true and update status to REJECTED
+    mission.missionKilled = true;
+    mission.status = "REJECTED";
+
+    // Save the updated mission
+    await mission.save();
+
+    res.status(200).json({ message: "Mission killed successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 
 module.exports = {
   createMission,
   updateTjm,
-  updateMissionStatus
+  updateMissionStatus,
+  getMissionById,
+  getMissionById,
+  getConsultantInfoById,
+  validateProcessus,
+  killMission
 };
