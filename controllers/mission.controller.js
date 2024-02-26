@@ -273,21 +273,23 @@ const validateProcessus = async (req, res) => {
   if (allFieldsValidated) {
     // Update the status to 'VALIDATED'
 console.log("yes")
+
     updatedPreRegistration.statut = "VALIDATED";
     const mission = await newMissionModel.findOne({ contractProcess: req.params.id }).exec();
 
     console.log(mission)
     mission.status = "VALID"
+    mission.missionKilled = false;
     await mission.save()
-
     await updatedPreRegistration.save();
   } else {
-
     updatedPreRegistration.statut = "PENDING";
     const mission = await newMissionModel.findOne({ contractProcess: req.params.id }).exec();
+    mission.missionKilled = false;
+
 
     console.log(mission)
-    mission.status = "REJECTED"
+    mission.status = "WAITINGCONTRACT"
     await mission.save()
 
     await updatedPreRegistration.save();
@@ -302,6 +304,34 @@ console.log("yes")
     return res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
+
+const killMission = async (req, res) => {
+  console.log("yes")
+  const missionId = req.params.id; // Assuming you have the missionId in the request parameters
+
+  try {
+    // Find the mission by ID
+    const mission = await newMissionModel.findById(missionId);
+
+    if (!mission) {
+      return res.status(404).json({ error: "Mission not found" });
+    }
+
+
+    // Set missionKilled to true and update status to REJECTED
+    mission.missionKilled = true;
+    mission.status = "REJECTED";
+
+    // Save the updated mission
+    await mission.save();
+
+    res.status(200).json({ message: "Mission killed successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   createMission,
   updateTjm,
@@ -309,5 +339,6 @@ module.exports = {
   getMissionById,
   getMissionById,
   getConsultantInfoById,
-  validateProcessus
+  validateProcessus,
+  killMission
 };

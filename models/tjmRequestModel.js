@@ -19,15 +19,15 @@ const tjmRequestSchema = new mongoose.Schema({
     valueOfNewTjm: {
         type: Number,
     },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    },
+
     simulationValidated:{
         type: String,
     },
 
 
-});
+}
+,{
+    timestamps: true,
+  });
 
 module.exports = mongoose.model("tjmRequest", tjmRequestSchema);

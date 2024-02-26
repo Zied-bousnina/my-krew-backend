@@ -287,6 +287,9 @@ const preRegistartionSchema = mongoose.Schema({
         type: String,
 
     },
-});
+}
+,{
+    timestamps: true,
+  });
 
 module.exports = PreRegistration = mongoose.model("preRegistartion", preRegistartionSchema);

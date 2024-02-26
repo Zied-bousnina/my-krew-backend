@@ -6,7 +6,7 @@ const {
   isResetTokenValid,
 } = require("../security/Rolemiddleware");
 
-const { createMission, updateTjm, updateMissionStatus, getMissionById, getConsultantInfoById, validateProcessus } = require("../controllers/mission.controller");
+const { createMission, updateTjm, updateMissionStatus, getMissionById, getConsultantInfoById, validateProcessus, killMission } = require("../controllers/mission.controller");
 const { UpdateInformationClientAndPersonalConsultantInfo, validateMissionClientInfo } = require("../controllers/preregistration.Controller");
 
 router.post(
@@ -52,5 +52,12 @@ router
     validateProcessus
   );
 
+  router
+  .route("/killMission/:id")
+  .put(
+    passport.authenticate("jwt", { session: false }),
+    isRole(ROLES.CONSULTANT, ROLES.RH),
+    killMission
+  );
 
 module.exports = router;

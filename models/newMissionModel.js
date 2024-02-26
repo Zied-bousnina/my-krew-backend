@@ -99,6 +99,15 @@ const newMissionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "contractProcess",
   },
-});
+  noteAuClient :  {
+    type: String,
+
+},
+
+
+},{
+  timestamps: true,
+}
+);
 
 module.exports = mongoose.model("newMission", newMissionSchema);

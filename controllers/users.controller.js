@@ -38,6 +38,7 @@ const authUser = async (req, res) => {
       userId: user._id,
     }).populate("contractProcess");
     console.log('++++++++++++++++++++++', preRegistration)
+    const firstMission = await newMissionModel.findOne({ userId: user._id }).sort({ createdAt: 1 });
 
     if (isMatch) {
       const token = jwt.sign(
@@ -53,6 +54,7 @@ const authUser = async (req, res) => {
           firstLogin: user.firstLogin,
           driverIsVerified: user.driverIsVerified,
           preRegister: preRegistration,
+          firstMission:firstMission
         },
         process.env.SECRET_KEY,
         { expiresIn: Number.MAX_SAFE_INTEGER }

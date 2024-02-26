@@ -30,6 +30,9 @@ const contractProcessSchema = new mongoose.Schema({
         enum: status,
         default: "PENDING"
     },
-});
+}
+,{
+    timestamps: true,
+  });
 
 module.exports = mongoose.model("contractProcess", contractProcessSchema);
