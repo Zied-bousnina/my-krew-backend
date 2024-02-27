@@ -65,6 +65,11 @@ const newMissionSchema = new mongoose.Schema({
       validated: { type: Boolean, default: null },
       causeNonValidation: { type: String, default: null },
     },
+    simulation: {
+      value: String,
+      validated: { type: Boolean, default: null },
+      causeNonValidation: { type: String, default: null },
+    },
     dailyRate: {
       value: Number,
       validated: { type: Boolean, default: null },

@@ -18,13 +18,14 @@ const createMission = async (req, res) => {
       company,
       metier,
       secteur,
+      simulation,
       client,
       tjm,
       debut,
       fin,
     } = req.body;
     const { simulationfile } = req.files;
-
+console.log(simulation)
     //new contract process
     const newContractProcess = new ContractProcess();
     const savedContractProcess = await newContractProcess.save();
@@ -61,6 +62,7 @@ const createMission = async (req, res) => {
         dailyRate: { value: tjm },
         startDate: { value: debut },
         endDate: { value: fin },
+        simulation: { value: simulation },
         isSimulationValidated: {
           value: await uploadFileToCloudinary(
             simulationfile,
@@ -112,7 +114,6 @@ const updateTjm = async (req, res) => {
   }
 };
 
-
 //*helper function
 const uploadFileToCloudinary = async (file, folderName) => {
   if (file) {
@@ -128,25 +129,18 @@ const uploadFileToCloudinary = async (file, folderName) => {
   return null;
 };
 
-
-
 const updateMissionStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
 
-
-
-
-
-      const mission = await newMission.findById(id);
-      mission.status = status;
-      let updatedMission = await mission.save();
+    const mission = await newMission.findById(id);
+    mission.status = status;
+    let updatedMission = await mission.save();
 
     return res.status(200).json({
       status: "success",
       action: "mission.controller.js/updateMissionStatus",
-
     });
   } catch (error) {
     console.error(error);
@@ -156,16 +150,16 @@ const updateMissionStatus = async (req, res) => {
       action: "mission.controller.js/updateMissionStatus",
     });
   }
-}
+};
 
 const getMissionById = async (req, res) => {
   try {
     const mission = await newMissionModel.findById(req.params.id).populate({
-      path: 'userId',
+      path: "userId",
       populate: {
-        path: 'preRegister',
+        path: "preRegister",
         // You can specify additional options for populating the 'preRegister' field here if needed
-      }
+      },
     });
     return res.status(200).json(mission);
   } catch (error) {
@@ -176,14 +170,16 @@ const getMissionById = async (req, res) => {
 
 const getConsultantInfoById = async (req, res) => {
   try {
-
-    const Mission = await newMissionModel.findById(req.params.id).populate({
-      path: 'userId',
-      populate: {
-        path: 'preRegister',
-        // You can specify additional options for populating the 'preRegister' field here if needed
-      }
-    }).populate("contractProcess");
+    const Mission = await newMissionModel
+      .findById(req.params.id)
+      .populate({
+        path: "userId",
+        populate: {
+          path: "preRegister",
+          // You can specify additional options for populating the 'preRegister' field here if needed
+        },
+      })
+      .populate("contractProcess");
     const consultant = await userModel
       .findById(Mission?.userId?._id)
       .populate("preRegister");
@@ -199,8 +195,6 @@ const getConsultantInfoById = async (req, res) => {
     const allpreregistration = await preRegistrationModel.countDocuments({});
     const newMission = await newMissionModel.countDocuments();
 
-
-
     return res.status(200).json({
       consultant: consultant,
       pendingCount: pendingCount,
@@ -208,7 +202,7 @@ const getConsultantInfoById = async (req, res) => {
       newMission: newMission,
       traiteCount: traiteCount,
       RejeteCount: RejeteCount,
-      Mission:Mission
+      Mission: Mission,
     });
   } catch (error) {
     console.error(error);
@@ -262,38 +256,41 @@ const validateProcessus = async (req, res) => {
       return res.status(404).json({ error: "preregister not found" });
     }
 
-   // Check if all fields are 'VALIDATED' and update the status accordingly
-   const allFieldsValidated = [
-    "contactClient",
-    "clientValidation",
-    "jobCotractEdition",
-    "contractValidation",
-  ].every((field) => updatedPreRegistration[field] === "VALIDATED");
+    // Check if all fields are 'VALIDATED' and update the status accordingly
+    const allFieldsValidated = [
+      "contactClient",
+      "clientValidation",
+      "jobCotractEdition",
+      "contractValidation",
+    ].every((field) => updatedPreRegistration[field] === "VALIDATED");
 
-  if (allFieldsValidated) {
-    // Update the status to 'VALIDATED'
-console.log("yes")
+    if (allFieldsValidated) {
+      // Update the status to 'VALIDATED'
+      console.log("yes");
 
-    updatedPreRegistration.statut = "VALIDATED";
-    const mission = await newMissionModel.findOne({ contractProcess: req.params.id }).exec();
+      updatedPreRegistration.statut = "VALIDATED";
+      const mission = await newMissionModel
+        .findOne({ contractProcess: req.params.id })
+        .exec();
 
-    console.log(mission)
-    mission.status = "VALID"
-    mission.missionKilled = false;
-    await mission.save()
-    await updatedPreRegistration.save();
-  } else {
-    updatedPreRegistration.statut = "PENDING";
-    const mission = await newMissionModel.findOne({ contractProcess: req.params.id }).exec();
-    mission.missionKilled = false;
+      console.log(mission);
+      mission.status = "VALID";
+      mission.missionKilled = false;
+      await mission.save();
+      await updatedPreRegistration.save();
+    } else {
+      updatedPreRegistration.statut = "PENDING";
+      const mission = await newMissionModel
+        .findOne({ contractProcess: req.params.id })
+        .exec();
+      mission.missionKilled = false;
 
+      console.log(mission);
+      mission.status = "WAITINGCONTRACT";
+      await mission.save();
 
-    console.log(mission)
-    mission.status = "WAITINGCONTRACT"
-    await mission.save()
-
-    await updatedPreRegistration.save();
-  }
+      await updatedPreRegistration.save();
+    }
 
     return res.status(200).json(updatedPreRegistration);
   } catch (error) {
@@ -306,7 +303,7 @@ console.log("yes")
 };
 
 const killMission = async (req, res) => {
-  console.log("yes")
+  console.log("yes");
   const missionId = req.params.id; // Assuming you have the missionId in the request parameters
 
   try {
@@ -316,7 +313,6 @@ const killMission = async (req, res) => {
     if (!mission) {
       return res.status(404).json({ error: "Mission not found" });
     }
-
 
     // Set missionKilled to true and update status to REJECTED
     mission.missionKilled = true;
@@ -339,5 +335,5 @@ module.exports = {
   getMissionById,
   getConsultantInfoById,
   validateProcessus,
-  killMission
+  killMission,
 };

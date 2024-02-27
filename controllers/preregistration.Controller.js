@@ -224,6 +224,7 @@ const uploadedSimulatedFile=await uploadFileToCloudinary(simulationfile, "isSimu
         industrySector: { value: missionInfo.secteur },
         finalClient: { value: missionInfo.client },
         dailyRate: { value: missionInfo.tjm },
+        simulation:{value:missionInfo.simulation},
         startDate: { value: missionInfo.debut },
         endDate: { value: missionInfo.fin },
         isSimulationValidated: {
