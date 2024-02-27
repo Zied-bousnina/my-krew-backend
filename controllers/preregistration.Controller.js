@@ -175,6 +175,7 @@ const createPreRegistration3 = async (req, res) => {
   }
 };
 const createPreRegistration4 = async (req, res) => {
+
   try {
     const { cin, ribDocument, permis } = req.files;
     const { rib, avs } = req.body;
@@ -525,6 +526,8 @@ const validateMissionClientInfo = async (req, res) => {
       // If any of the fields is present, set validated to "VALIDATED"
       validated = "VALIDATED";
 
+    }else{
+      validated = "REJECTED";
     }
 
 
@@ -563,7 +566,9 @@ const validateMissionClientInfo = async (req, res) => {
 
         status:
           validated == "VALIDATED"
-            ? "WAITINGCONTRACT"
+            ? "WAITINGCONTRACT" :
+            validated== "REJECTED" ?
+            "REJECTED"
             : "PENDING",
 
       },
