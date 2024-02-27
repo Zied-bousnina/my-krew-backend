@@ -12,6 +12,7 @@ const changePasswordValidation = require('../validations/ChangePasswordValidatio
 const { sendError, createRandomBytes } = require("../utils/helper");
 const { generateOTP,generateRandomPassword, mailTransport, generateEmailTemplate,generateDeleteAccountEmailTemplate,generateEmailTemplateDriver,generateEmailTemplatePartner,generateEmailTemplateAffectation, plainEmailTemplate, generatePasswordResetTemplate, generateEmailTemplateDeleterAccount, generateEmailTemplateValidationAccountByAdmin, generateEmailTemplateRefusAccountByAdmin } = require("../utils/mail");
 var mailer = require('../utils/mailer');
+const virementModel = require("../models/virementModel.js");
 const authUser = async (req, res) => {
   try {
     const { errors, isValid } = validateLoginInput(req.body);
@@ -472,6 +473,26 @@ const updatePassword = async (req, res) => {
   }
 };
 
+const AddVirement = async (req, res) => {
+  try {
+      const { typeVirement, montant } = req.body;
+      const userId = req.params.id;
+
+      // Create a new virement
+      const newVirement = await virementModel.create({
+          userId,
+          typeVirement,
+          montant,
+      });
+
+      // Return the newly created virement
+      return res.status(201).json(newVirement);
+  } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 
 module.exports = {
   authUser,
@@ -487,7 +508,8 @@ module.exports = {
   updateConsultantRIBById,
   forgotPassword,
   resetPassword,
-  updatePassword
+  updatePassword,
+  AddVirement
 };
 
 const uploadFileToCloudinary = async (file, folderName) => {
