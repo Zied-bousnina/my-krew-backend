@@ -21,6 +21,7 @@ const {
   resetPassword,
   forgotPassword,
   getConsultantInfoWithMissionById2,
+  AddVirement,
 } = require("../controllers/users.controller.js");
 const {
   createPreRegistration1,
@@ -154,6 +155,13 @@ router
     passport.authenticate("jwt", { session: false }),
     isRole(ROLES.CONSULTANT, ROLES.RH),
     validateCRA
+  );
+  router
+  .route("/AddVirement/:id")
+  .post(
+    passport.authenticate("jwt", { session: false }),
+    isRole(ROLES.CONSULTANT, ROLES.RH),
+    AddVirement
   );
   router
   .route("/getConsultantInfoWithMissionById2/:id")
