@@ -22,6 +22,7 @@ const {
   forgotPassword,
   getConsultantInfoWithMissionById2,
   AddVirement,
+  getConsultantVirement,
 } = require("../controllers/users.controller.js");
 const {
   createPreRegistration1,
@@ -218,6 +219,13 @@ router
     passport.authenticate("jwt", { session: false }),
     isRole(ROLES.CONSULTANT),
     updateConsultantRIBById
+  );
+router
+  .route("/getVirements/:id")
+  .get(
+    passport.authenticate("jwt", { session: false }),
+    isRole(ROLES.CONSULTANT),
+    getConsultantVirement
   );
 
   // Reset password

@@ -8,10 +8,24 @@ const preRegistrationModel = require("../models/preRegistrationModel");
 const newMissionModel = require("../models/newMissionModel");
 const cloudinary = require("../utils/uploadImage");
 const resetTokenModels = require("../models/resetToken.models");
-const changePasswordValidation = require('../validations/ChangePasswordValidation.js')
+const changePasswordValidation = require("../validations/ChangePasswordValidation.js");
 const { sendError, createRandomBytes } = require("../utils/helper");
-const { generateOTP,generateRandomPassword, mailTransport, generateEmailTemplate,generateDeleteAccountEmailTemplate,generateEmailTemplateDriver,generateEmailTemplatePartner,generateEmailTemplateAffectation, plainEmailTemplate, generatePasswordResetTemplate, generateEmailTemplateDeleterAccount, generateEmailTemplateValidationAccountByAdmin, generateEmailTemplateRefusAccountByAdmin } = require("../utils/mail");
-var mailer = require('../utils/mailer');
+const {
+  generateOTP,
+  generateRandomPassword,
+  mailTransport,
+  generateEmailTemplate,
+  generateDeleteAccountEmailTemplate,
+  generateEmailTemplateDriver,
+  generateEmailTemplatePartner,
+  generateEmailTemplateAffectation,
+  plainEmailTemplate,
+  generatePasswordResetTemplate,
+  generateEmailTemplateDeleterAccount,
+  generateEmailTemplateValidationAccountByAdmin,
+  generateEmailTemplateRefusAccountByAdmin,
+} = require("../utils/mail");
+var mailer = require("../utils/mailer");
 const virementModel = require("../models/virementModel.js");
 const authUser = async (req, res) => {
   try {
@@ -38,8 +52,10 @@ const authUser = async (req, res) => {
     const preRegistration = await Preregister.find({
       userId: user._id,
     }).populate("contractProcess");
-    console.log('++++++++++++++++++++++', preRegistration)
-    const firstMission = await newMissionModel.findOne({ userId: user._id }).sort({ createdAt: 1 });
+    console.log("++++++++++++++++++++++", preRegistration);
+    const firstMission = await newMissionModel
+      .findOne({ userId: user._id })
+      .sort({ createdAt: 1 });
 
     if (isMatch) {
       const token = jwt.sign(
@@ -55,12 +71,11 @@ const authUser = async (req, res) => {
           firstLogin: user.firstLogin,
           driverIsVerified: user.driverIsVerified,
           preRegister: preRegistration,
-          firstMission:firstMission
+          firstMission: firstMission,
         },
         process.env.SECRET_KEY,
         { expiresIn: Number.MAX_SAFE_INTEGER }
       );
-
 
       return res
         .header("auth-token", token)
@@ -78,8 +93,6 @@ const authUser = async (req, res) => {
       return res.status(404).json(errors);
     }
   } catch (error) {
-
-
     return res
       .status(500)
       .json({ success: false, message: "Internal Server Error" });
@@ -160,8 +173,6 @@ const getConsultantInfoById = async (req, res) => {
     const allpreregistration = await preRegistrationModel.countDocuments({});
     const newMission = await newMissionModel.countDocuments();
 
-
-
     return res.status(200).json({
       consultant: consultant,
       pendingCount: pendingCount,
@@ -180,10 +191,11 @@ const getConsultantInfoWithMissionById = async (req, res) => {
   try {
     const consultant = await userModel
       .findById(req.params.id)
-      .populate("preRegister").populate("missions");
+      .populate("preRegister")
+      .populate("missions");
     const AllMission = await newMissionModel.find({ userId: req.params.id });
 
-console.log(consultant?.missions)
+    console.log(consultant?.missions);
     return res.status(200).json({
       consultant: consultant,
       AllMission: AllMission,
@@ -195,13 +207,13 @@ console.log(consultant?.missions)
 };
 const getConsultantInfoWithMissionById2 = async (req, res) => {
   try {
-
     const preregistration = await preRegistrationModel.findById(req.params.id);
     const consultant = await userModel
       .findById(preregistration.userId)
       .populate("preRegister");
-    const AllMission = await newMissionModel.find({ userId: preregistration.userId });
-
+    const AllMission = await newMissionModel.find({
+      userId: preregistration.userId,
+    });
 
     return res.status(200).json({
       consultant: consultant,
@@ -240,7 +252,7 @@ const updateConsultantProfileImageById = async (req, res) => {
     const imageUrl = await uploadFileToCloudinary(image, "consultantProfile");
     const consultant = await userModel.findById(req.user.id);
     consultant.image = imageUrl;
-    const updatedConsultant =await consultant.save();
+    const updatedConsultant = await consultant.save();
 
     return res.status(200).json({
       data: updatedConsultant,
@@ -256,7 +268,6 @@ const updateConsultantProfileImageById = async (req, res) => {
     });
   }
 };
-
 
 const updateConsultantCINById = async (req, res) => {
   // Ensure image file and user ID are present
@@ -274,7 +285,9 @@ const updateConsultantCINById = async (req, res) => {
     const imageUrl = await uploadFileToCloudinary(image, "consultantCIN");
 
     // Find the user and populate preRegister
-    const consultant = await userModel.findById(req.user.id).populate("preRegister");
+    const consultant = await userModel
+      .findById(req.user.id)
+      .populate("preRegister");
 
     // Check if consultant and preRegister exist
     if (!consultant || !consultant.preRegister) {
@@ -323,7 +336,9 @@ const updateConsultantRIBById = async (req, res) => {
     const imageUrl = await uploadFileToCloudinary(image, "consultantRIB");
 
     // Find the user and populate preRegister
-    const consultant = await userModel.findById(req.user.id).populate("preRegister");
+    const consultant = await userModel
+      .findById(req.user.id)
+      .populate("preRegister");
 
     // Check if consultant and preRegister exist
     if (!consultant || !consultant.preRegister) {
@@ -357,20 +372,19 @@ const updateConsultantRIBById = async (req, res) => {
 };
 
 const forgotPassword = async (req, res) => {
-
   const { email } = req.body;
   if (!email) {
-    return sendError(res, 'Please provide a valid email!');
+    return sendError(res, "Please provide a valid email!");
   }
 
   const user = await userModel.findOne({ email });
   if (!user) {
-    return sendError(res, 'Sorry! User not found!');
+    return sendError(res, "Sorry! User not found!");
   }
 
   const token = await resetTokenModels.findOne({ owner: user._id });
-  if (token ) {
-    return sendError(res, 'You can request a new token after one hour!');
+  if (token) {
+    return sendError(res, "You can request a new token after one hour!");
   }
 
   const resetToken = await createRandomBytes();
@@ -378,37 +392,43 @@ const forgotPassword = async (req, res) => {
 
   const newToken = new resetTokenModels({
     owner: user._id,
-    token: resetToken
-
-
+    token: resetToken,
   });
 
   await newToken.save();
 
-  mailer.send({
-    to: ["zbousnina@yahoo.com",user.email ],
-    subject: "Verification code",
-    html: generatePasswordResetTemplate(`https://my-krew-fron-end.vercel.app/reset-password?token=${resetToken}&id=${user._id}`)
-  }, (err)=>{
+  mailer.send(
+    {
+      to: ["zbousnina@yahoo.com", user.email],
+      subject: "Verification code",
+      html: generatePasswordResetTemplate(
+        `https://my-krew-fron-end.vercel.app/reset-password?token=${resetToken}&id=${user._id}`
+      ),
+    },
+    (err) => {}
+  );
 
-  })
-
-  res.status(200).json({success: true, message: 'Reset password link has been sent to your email!' });
+  res
+    .status(200)
+    .json({
+      success: true,
+      message: "Reset password link has been sent to your email!",
+    });
 };
 const resetPassword = async (req, res) => {
   const { password } = req.body;
   const user = await userModel.findById(req.user._id);
   if (!user) {
-    return sendError(res, 'User not found');
+    return sendError(res, "User not found");
   }
 
   const isSamePassword = await user.comparePassword(password);
   if (isSamePassword) {
-    return sendError(res, 'You cannot use the same password');
+    return sendError(res, "You cannot use the same password");
   }
 
   if (password.trim().length < 8 || password.trim().length > 20) {
-    return sendError(res, 'Password must be between 8 and 20 characters');
+    return sendError(res, "Password must be between 8 and 20 characters");
   }
 
   // user.password = password.trim();
@@ -417,16 +437,21 @@ const resetPassword = async (req, res) => {
 
   await resetTokenModels.findOneAndDelete({ owner: user._id });
 
+  mailer.send(
+    {
+      to: ["zbousnina@yahoo.com", user.email],
+      subject: "Verification code",
+      html: plainEmailTemplate(
+        "Password reset successfully",
+        "Your password has been reset successfully!"
+      ),
+    },
+    (err) => {}
+  );
 
-  mailer.send({
-    to: ["zbousnina@yahoo.com",user.email ],
-    subject: "Verification code",
-    html: plainEmailTemplate('Password reset successfully', 'Your password has been reset successfully!'),
-  }, (err)=>{
-
-  })
-
-  res.status(200).json({ message: 'Password reset successfully', success:true });
+  res
+    .status(200)
+    .json({ message: "Password reset successfully", success: true });
 };
 const updatePassword = async (req, res) => {
   let responseSent = false;
@@ -456,14 +481,15 @@ const updatePassword = async (req, res) => {
     }
 
     // Update password and set firstLogin to false
-    const newPassword = bcrypt.hashSync((req.body.newPassword).trim(), 10);
+    const newPassword = bcrypt.hashSync(req.body.newPassword.trim(), 10);
     user.password = newPassword;
     user.firstLogin = false;
 
     await user.save();
     responseSent = true;
-    return res.status(200).json({ success: true, message: "Password updated successfully" });
-
+    return res
+      .status(200)
+      .json({ success: true, message: "Password updated successfully" });
   } catch (error) {
     if (!responseSent) {
       responseSent = true;
@@ -475,24 +501,45 @@ const updatePassword = async (req, res) => {
 
 const AddVirement = async (req, res) => {
   try {
-      const { typeVirement, montant } = req.body;
-      const userId = req.params.id;
+    const { typeVirement, montant } = req.body;
+    const userId = req.params.id;
 
-      // Create a new virement
-      const newVirement = await virementModel.create({
-          userId,
-          typeVirement,
-          montant,
-      });
+    // Create a new virement
+    const newVirement = await virementModel.create({
+      userId,
+      typeVirement,
+      montant,
+    });
 
-      // Return the newly created virement
-      return res.status(201).json(newVirement);
+    // Return the newly created virement
+    return res.status(201).json(newVirement);
   } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Internal Server Error' });
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
+const getConsultantVirement = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const virements = await virementModel.find({ userId });
+    return res
+      .status(200)
+      .json({
+        data: virements,
+        status: "success",
+        action: "userController.js/getConsultantVirement",
+      });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({
+        message: "Internal Server Error",
+        status: "error",
+        action: "userController.js/getConsultantVirement",
+      });
+  }
+};
 
 module.exports = {
   authUser,
@@ -509,7 +556,8 @@ module.exports = {
   forgotPassword,
   resetPassword,
   updatePassword,
-  AddVirement
+  AddVirement,
+  getConsultantVirement
 };
 
 const uploadFileToCloudinary = async (file, folderName) => {
