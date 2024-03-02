@@ -72,6 +72,8 @@ const authUser = async (req, res) => {
           driverIsVerified: user.driverIsVerified,
           preRegister: preRegistration,
           firstMission: firstMission,
+          isBlocked:user?.isBlocked,
+          CreatedByAdmin:user?.CreatedByAdmin
         },
         process.env.SECRET_KEY,
         { expiresIn: Number.MAX_SAFE_INTEGER }

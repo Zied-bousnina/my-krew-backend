@@ -12,19 +12,19 @@ const { UpdateInformationClientAndPersonalConsultantInfo, validateMissionClientI
 router.post(
   "/createMission",
   passport.authenticate("jwt", { session: false }),
-  isRole(ROLES.CONSULTANT),
+  isRole(ROLES.CONSULTANT,ROLES.ADMIN),
   createMission
 );
 router.put(
   "/updateTjm/:id",
   passport.authenticate("jwt", { session: false }),
-  isRole(ROLES.CONSULTANT),
+  isRole(ROLES.CONSULTANT,ROLES.ADMIN),
   updateTjm
 );
 router.put(
   "/UpdateInformationClientAndPersonalConsultantInfo/:id",
   passport.authenticate("jwt", { session: false }),
-  isRole(ROLES.CONSULTANT),
+  isRole(ROLES.CONSULTANT,ROLES.ADMIN),
   UpdateInformationClientAndPersonalConsultantInfo
 );
 
@@ -48,7 +48,7 @@ router
   .route("/validateProcessus/:id")
   .put(
     passport.authenticate("jwt", { session: false }),
-    isRole(ROLES.CONSULTANT, ROLES.RH),
+    isRole(ROLES.CONSULTANT,ROLES.ADMIN, ROLES.RH),
     validateProcessus
   );
 
@@ -56,7 +56,7 @@ router
   .route("/killMission/:id")
   .put(
     passport.authenticate("jwt", { session: false }),
-    isRole(ROLES.CONSULTANT, ROLES.RH),
+    isRole(ROLES.CONSULTANT,ROLES.ADMIN, ROLES.RH),
     killMission
   );
 

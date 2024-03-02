@@ -11,6 +11,7 @@ const formData = require('express-form-data');
 const morgan = require('morgan');
 const cors = require('cors');
 const consultantRoutes = require('./routes/consultantRoutes.js');
+const AdminRoutes = require('./routes/Admin.route.js');
 const missionRoutes = require('./routes/missionRoutes.js');
 
 const app = express();
@@ -59,6 +60,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/users', userRoutes);
 app.use('/api/consultant', consultantRoutes);
 app.use('/api/mission', missionRoutes);
+app.use('/api/admin', AdminRoutes);
 
 // Start the server
 const server = app.listen(PORT, async () => {

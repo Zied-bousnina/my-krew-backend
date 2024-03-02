@@ -20,7 +20,7 @@ const { createCra, craAlreadyCreatedForCurrentMonth } = require("../controllers/
 router.get(
   "/getAllMissions/:id",
   passport.authenticate("jwt", { session: false }),
-  isRole(ROLES.CONSULTANT),
+  isRole(ROLES.CONSULTANT,ROLES.ADMIN),
   getConsultantMissions
 );
 router.get(
@@ -30,38 +30,38 @@ router.get(
 router.get(
   "/getPendingMissions/:id",
   passport.authenticate("jwt", { session: false }),
-  isRole(ROLES.CONSULTANT),
+  isRole(ROLES.CONSULTANT,ROLES.ADMIN),
   getConsultantMissionsPending
 );
 router.get(
   "/getValidatedMissions/:id",
   passport.authenticate("jwt", { session: false }),
-  isRole(ROLES.CONSULTANT),
+  isRole(ROLES.CONSULTANT,ROLES.ADMIN),
   getConsultantMissionsValidated
 );
 router.get("/getNotValidatedMissions/:id", getConsultantMissionsNotValidated);
 router.get(
   "/getLastMission/:id",
   passport.authenticate("jwt", { session: false }),
-  isRole(ROLES.CONSULTANT),
+  isRole(ROLES.CONSULTANT,ROLES.ADMIN),
   getConsultantLastMission
 );
 router.post(
   "/createCra",
   passport.authenticate("jwt", { session: false }),
-  isRole(ROLES.CONSULTANT),
+  isRole(ROLES.CONSULTANT,ROLES.ADMIN),
   createCra
 );
 router.get(
   "/craAlreadyCreated/:id",
   passport.authenticate("jwt", { session: false }),
-  isRole(ROLES.CONSULTANT),
+  isRole(ROLES.CONSULTANT,ROLES.ADMIN),
   craAlreadyCreatedForCurrentMonth
 );
 router.get(
   "/getClosestEndDateMission/:id",
   passport.authenticate("jwt", { session: false }),
-  isRole(ROLES.CONSULTANT),
+  isRole(ROLES.CONSULTANT,ROLES.ADMIN),
   getConsultantClosestEndDateMission
 );
 module.exports = router;

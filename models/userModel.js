@@ -73,7 +73,18 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
+
+    isBlocked: {
+      type: Boolean,
+      default: false
+    },
+    CreatedByAdmin :  {
+      type: Boolean,
+      default: false
+    },
+
   },
+
   {
     timestamps: true,
   }
