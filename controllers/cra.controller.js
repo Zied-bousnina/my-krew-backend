@@ -1,10 +1,11 @@
+const LogModel = require("../models/Log.model");
 const contractModel = require("../models/contractModel");
 const craModel = require("../models/craModel");
 const cra = require("../models/craModel");
 const cloudinary = require("../utils/uploadImage");
 
 const createCra = async (req, res) => {
-  console.log(req)
+  // console.log(req)
   try {
     const craFile = await uploadFileToCloudinary(req.files.craFile, "cra");
 
@@ -14,6 +15,12 @@ const createCra = async (req, res) => {
       missionId: req.body.missionId,
     });
     const savedCra = await newCra.save();
+    await new LogModel({
+      userId: req.user.id,
+      action: 'Création de CRA',
+      details: `CRA pour la mission ${req.body.missionId} créé avec succès.`,
+    }).save();
+
     return res.status(201).json({
       action: "cra.controller.js/createCra",
       status: "success",
@@ -96,6 +103,11 @@ const validateCRA = async (req, res) => {
     CRA.status = status == "Validée" ? "VALIDATED" : status == "En cours" ? "PENDING" : status == "refusé" ? "NOTVALIDATED" : "NOTVALIDATED";
 
     await CRA.save();
+    await new LogModel({
+      userId: req.user.id,
+      action: 'CRA Validé',
+      details: `Le statut du CRA avec l'ID ${req.params.id} a été mis à jour vers '${status}'.`,
+    }).save();
     console.log(CRA)
 
     return res.status(200).json(CRA);

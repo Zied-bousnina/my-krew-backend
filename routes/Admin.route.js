@@ -37,8 +37,8 @@ router
   router
   .route("/Rh/AddRH")
   .post(
-    // passport.authenticate("jwt", { session: false }),
-    // isRole(ROLES.ADMIN),
+    passport.authenticate("jwt", { session: false }),
+    isRole(ROLES.ADMIN),
     AddRH
   );
 

@@ -2,36 +2,41 @@ const mongoose = require('mongoose');
 mongoose.set("strictQuery", false);
 
 
-const types = ["NEWPREREGISTER","NEWMISSION",'PREREGISTERKILLED','MISSIONKILLED','MISSIONNOTVALID','MISSIONVALID','TJMREQUEST', 'TJMREQUESTRESPONSENOTVALIDATED', "TJMREQUESTRESPONSEVALIDATED", 'VIREMENT'];
-const toWho = ['CONSULTANT','RH'];
 
 const notificationSchema = new mongoose.Schema({
     userId: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user',
+        required: true,
     },
-    typeOfNotification: {
+    action : {
         type: String,
-        enum: types,
+        required: true,
+
     },
-    toWho:{
+    details : {
         type: String,
-        enum: toWho
+        required: true,
     },
-    preregisterId:{
+    pathurl: {
         type: String,
+        required: true,
     },
-    tjmRequestId:{
+    idToPath :  {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+    },
+    consultanName:{
         type: String,
+
+
     },
-    missionId:{
+    consultantEmail:{
         type: String,
+
     },
-    virementId:{
-        type: String,
-    },
-    note:{
-        type: String,
-    },
+
+
 
 
 

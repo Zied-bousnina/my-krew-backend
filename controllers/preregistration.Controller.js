@@ -6,6 +6,7 @@ const moment = require("moment");
 const ContractProcess = require("../models/contractModel.js");
 const newMissionModel = require("../models/newMissionModel.js");
 const newMission = require("../models/newMissionModel");
+const LogModel = require("../models/Log.model.js");
 
 const createPreRegistration1 = async (req, res) => {
   try {
@@ -493,6 +494,11 @@ const validatePreregistrationClientInfo = async (req, res) => {
     if (!updatedPreRegistration) {
       return res.status(404).json({ error: "preregister not found" });
     }
+    await new LogModel({
+      userId: req.user.id, // Assuming you have the authenticated user's ID
+      action: 'Validation des informations de pré-inscription',
+      details: `Les informations de pré-inscription pour l'ID ${req.params.id} ont été validées.`,
+    }).save();
 
     return res.status(200).json(updatedPreRegistration);
   } catch (error) {
@@ -725,6 +731,11 @@ const UpdateInformationClientAndPersonalConsultantInfo = async (req, res) => {
       return res.status(404).json({ error: "mission not found" });
     }
 
+    await new LogModel({
+      action: 'Mise à jour des informations consultant et client',
+      details: `Mise à jour réussie pour la pré-inscription .`,
+      userId: req.user.id, // Assuming you have user context
+    }).save();
 
     return res.status(200).json(updatedPreRegistration);
   } catch (error) {
@@ -736,18 +747,97 @@ const UpdateInformationClientAndPersonalConsultantInfo = async (req, res) => {
   }
 };
 
+// const validateProcessus = async (req, res) => {
+//   try {
+//     const { step, status } = req.body;
+
+//     const preRegistration = await preRegistrationModel.findById(req.params.id);
+
+//     if (!preRegistration) {
+//       return res.status(404).json({ message: "Pré-inscription non trouvée" });
+//     }
+
+//     let updateField;
+
+//     switch (step) {
+//       case "Validation Informations Personnelles":
+//         updateField = "validateClient";
+//         break;
+//       case "Prise de contact avec le client":
+//         updateField = "validateContractWithClient";
+//         break;
+//       case "Contrat de service validé avec le client":
+//         updateField = "validateContractTravail";
+//         break;
+//       default:
+//         updateField = "transmissionContract";
+//         break;
+//     }
+
+//     const updatedPreRegistration = await preRegistrationModel.findOneAndUpdate(
+//       { _id: req.params.id },
+//       {
+//         [updateField]:
+//           status === "Validée"
+//             ? "VALIDATED"
+//             : status === "En cours"
+//             ? "PENDING"
+//             : status === "En attente"
+//             ? "NOTVALIDATED"
+//             : "NOTVALIDATED",
+//       },
+//       { new: true }
+//     );
+
+//     if (!updatedPreRegistration) {
+//       return res.status(404).json({ error: "preregister not found" });
+//     }
+
+//     // Check if all fields are 'VALIDATED' and update the status accordingly
+//     const allFieldsValidated = [
+//       "validateClient",
+//       "validateContractWithClient",
+//       "validateContractTravail",
+//       "transmissionContract",
+//     ].every((field) => updatedPreRegistration[field] === "VALIDATED");
+
+//     if (allFieldsValidated) {
+//       // Update the status to 'VALIDATED'
+
+//       updatedPreRegistration.status = "VALIDATED";
+//       updatedPreRegistration.validationRH = "VALIDATED";
+//       await updatedPreRegistration.save();
+//     } else {
+//       updatedPreRegistration.status = "PENDING";
+//       updatedPreRegistration.validationRH = "PENDING";
+//       await updatedPreRegistration.save();
+//     }
+
+//     return res.status(200).json(updatedPreRegistration);
+//   } catch (error) {
+//     console.error(
+//       "Erreur lors de la validation des informations du client de la pré-inscription :",
+//       error
+//     );
+//     return res.status(500).json({ message: "Erreur interne du serveur" });
+//   }
+// };
 const validateProcessus = async (req, res) => {
   try {
     const { step, status } = req.body;
-
     const preRegistration = await preRegistrationModel.findById(req.params.id);
 
     if (!preRegistration) {
+      await new LogModel({
+        userId: req.user?.id, // If user information is available, include it
+        action: 'Validation Processus',
+        details: `Pré-inscription non trouvée pour l'ID: ${req.params.id}.`,
+      }).save();
+
       return res.status(404).json({ message: "Pré-inscription non trouvée" });
     }
 
     let updateField;
-
     switch (step) {
       case "Validation Informations Personnelles":
         updateField = "validateClient";
@@ -766,14 +856,7 @@ const validateProcessus = async (req, res) => {
     const updatedPreRegistration = await preRegistrationModel.findOneAndUpdate(
       { _id: req.params.id },
       {
-        [updateField]:
-          status === "Validée"
-            ? "VALIDATED"
-            : status === "En cours"
-            ? "PENDING"
-            : status === "En attente"
-            ? "NOTVALIDATED"
-            : "NOTVALIDATED",
+        [updateField]: status === "Validée" ? "VALIDATED" : status === "En cours" ? "PENDING" : "NOTVALIDATED",
       },
       { new: true }
     );
@@ -782,35 +865,29 @@ const validateProcessus = async (req, res) => {
       return res.status(404).json({ error: "preregister not found" });
     }
 
-    // Check if all fields are 'VALIDATED' and update the status accordingly
-    const allFieldsValidated = [
-      "validateClient",
-      "validateContractWithClient",
-      "validateContractTravail",
-      "transmissionContract",
-    ].every((field) => updatedPreRegistration[field] === "VALIDATED");
-
-    if (allFieldsValidated) {
-      // Update the status to 'VALIDATED'
-
-      updatedPreRegistration.status = "VALIDATED";
-      updatedPreRegistration.validationRH = "VALIDATED";
-      await updatedPreRegistration.save();
-    } else {
-      updatedPreRegistration.status = "PENDING";
-      updatedPreRegistration.validationRH = "PENDING";
-      await updatedPreRegistration.save();
-    }
+    // Log successful update
+    await new LogModel({
+      userId: req.user?.id,
+      action: 'Mise à jour du statut de pré-inscription',
+      details: `Statut de pré-inscription mis à jour pour ${updateField} avec l'état: ${status}.`,
+    }).save();
 
     return res.status(200).json(updatedPreRegistration);
   } catch (error) {
-    console.error(
-      "Erreur lors de la validation des informations du client de la pré-inscription :",
-      error
-    );
+    console.error("Erreur lors de la validation des informations du client de la pré-inscription :", error);
+
+    // Log error
+    await new LogModel({
+      userId: req.user?.id,
+      action: 'Erreur Validation Processus',
+      details: `Erreur lors de la validation du processus pour l'ID ${req.params.id}: ${error.message}`,
+    }).save();
+
     return res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
+
+
 
 const sendNote = async (req, res) => {
   try {
@@ -831,6 +908,11 @@ const sendNote = async (req, res) => {
 
     // Save the updated mission
     await mission.save();
+    await new LogModel({
+      userId: req.user.id, // Include the user ID for the log entry
+      action: 'Note envoyée et mission annulée',
+      details: `Une note a été ajoutée à la mission avec l'ID : ${missionId} et le statut a été mis à jour à "REJECTED".`,
+    }).save();
 
     res.status(200).json({ message: "Mission killed successfully" });
   }catch (error) {

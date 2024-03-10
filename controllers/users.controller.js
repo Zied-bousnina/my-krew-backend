@@ -10,6 +10,8 @@ const cloudinary = require("../utils/uploadImage");
 const resetTokenModels = require("../models/resetToken.models");
 const changePasswordValidation = require("../validations/ChangePasswordValidation.js");
 const { sendError, createRandomBytes } = require("../utils/helper");
+const Log = require('../models/Log.model.js'); // Assuming your Log model is named log.js
+
 const {
   generateOTP,
   generateRandomPassword,
@@ -27,6 +29,8 @@ const {
 } = require("../utils/mail");
 var mailer = require("../utils/mailer");
 const virementModel = require("../models/virementModel.js");
+const LogModel = require("../models/Log.model.js");
+const UserDocument = require("../models/userDocumentModel.js");
 const authUser = async (req, res) => {
   try {
     const { errors, isValid } = validateLoginInput(req.body);
@@ -197,10 +201,12 @@ const getConsultantInfoWithMissionById = async (req, res) => {
       .populate("missions");
     const AllMission = await newMissionModel.find({ userId: req.params.id });
 
+    const documents = await UserDocument.find({ userId:  req.params.id  });
     console.log(consultant?.missions);
     return res.status(200).json({
       consultant: consultant,
       AllMission: AllMission,
+      documents: documents,
     });
   } catch (error) {
     console.error(error);
@@ -255,7 +261,12 @@ const updateConsultantProfileImageById = async (req, res) => {
     const consultant = await userModel.findById(req.user.id);
     consultant.image = imageUrl;
     const updatedConsultant = await consultant.save();
-
+// For updateConsultantProfileImageById - After successful image update
+await new LogModel({
+  userId: req.user.id,
+  action: 'Mise à jour de l\'image de profil',
+  details: `L'image de profil de ${req.user.id} a été mise à jour avec succès.`
+}).save();
     return res.status(200).json({
       data: updatedConsultant,
       action: "userController.js/updateConsultantProfileImageById",
@@ -272,12 +283,17 @@ const updateConsultantProfileImageById = async (req, res) => {
 };
 
 const updateConsultantCINById = async (req, res) => {
-  // Ensure image file and user ID are present
   if (!req.files || !req.files.image || !req.user || !req.user.id) {
+    await new LogModel({
+      userId: req.user.id,
+      action: 'Mise à jour CIN',
+      details: 'Échec de la mise à jour de CIN : champs requis manquants.',
+    }).save();
+
     return res.status(400).json({
       status: "error",
       action: "userController.js/updateConsultantCINById",
-      message: "Missing required fields (image or user ID)",
+      message: "Champs requis manquants (image ou ID utilisateur).",
     });
   }
 
@@ -285,39 +301,49 @@ const updateConsultantCINById = async (req, res) => {
 
   try {
     const imageUrl = await uploadFileToCloudinary(image, "consultantCIN");
+    const consultant = await userModel.findById(req.user.id).populate("preRegister");
 
-    // Find the user and populate preRegister
-    const consultant = await userModel
-      .findById(req.user.id)
-      .populate("preRegister");
-
-    // Check if consultant and preRegister exist
     if (!consultant || !consultant.preRegister) {
+      await new LogModel({
+        userId: req.user.id,
+        action: 'Mise à jour CIN',
+        details: 'Consultant ou pré-enregistrement non trouvé.',
+      }).save();
+
       return res.status(404).json({
         status: "error",
         action: "userController.js/updateConsultantCINById",
-        message: "Consultant or pre-registration not found",
+        message: "Consultant ou pré-enregistrement non trouvé.",
       });
     }
 
-    // Update the nested document field
     consultant.preRegister.personalInfo.identificationDocument.value = imageUrl;
-
-    // Explicitly save the preRegister document to persist changes
     await consultant.preRegister.save();
 
-    // No need to save the consultant if only preRegister was changed
+    await new LogModel({
+      userId: req.user.id,
+      action: 'Mise à jour CIN',
+      details: 'La CIN du consultant a été mise à jour avec succès.',
+    }).save();
+
     return res.status(200).json({
-      data: consultant, // or you might want to reload the consultant to reflect the update
+      data: consultant,
       action: "userController.js/updateConsultantCINById",
       status: "success",
     });
   } catch (error) {
     console.error(error);
+
+    await new LogModel({
+      userId: req.user.id,
+      action: 'Mise à jour CIN',
+      details: 'Erreur interne du serveur lors de la mise à jour de la CIN.',
+    }).save();
+
     return res.status(500).json({
       status: "error",
       action: "userController.js/updateConsultantCINById",
-      message: "Internal Server Error",
+      message: "Erreur interne du serveur.",
     });
   }
 };
@@ -356,7 +382,11 @@ const updateConsultantRIBById = async (req, res) => {
 
     // Explicitly save the preRegister document to persist changes
     await consultant.preRegister.save();
-
+    await new LogModel({
+      userId: req.user.id,
+      action: 'Mise à jour RIB',
+      details: 'Le RIB a été mis à jour avec succès.'
+    }).save();
     // No need to save the consultant if only preRegister was changed
     return res.status(200).json({
       data: consultant, // or you might want to reload the consultant to reflect the update
@@ -365,6 +395,11 @@ const updateConsultantRIBById = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+    await new LogModel({
+      userId: req.user.id,
+      action: 'Mise à jour RIB',
+      details: 'Échec de la mise à jour du RIB : erreur interne du serveur.'
+    }).save();
     return res.status(500).json({
       status: "error",
       action: "userController.js/updateConsultantRIBById",
@@ -488,6 +523,11 @@ const updatePassword = async (req, res) => {
     user.firstLogin = false;
 
     await user.save();
+    await new LogModel({
+      userId: req.user.id,
+      action: 'Mise à jour du mot de passe',
+      details: 'Le mot de passe a été mis à jour avec succès.'
+    }).save();
     responseSent = true;
     return res
       .status(200)
@@ -513,13 +553,24 @@ const AddVirement = async (req, res) => {
       montant,
     });
 
+    // Log the successful creation of the virement
+    await new LogModel({
+      userId: req.user.id,
+      action: 'Création de virement',
+      details: `Un nouveau virement de type "${typeVirement}" d'un montant de ${montant} a été créé pour l'utilisateur ${userId}.`
+    }).save();
+
     // Return the newly created virement
     return res.status(201).json(newVirement);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Internal Server Error" });
+
+
+
+    return res.status(500).json({ error: "Erreur interne du serveur" });
   }
 };
+
 const getConsultantVirement = async (req, res) => {
   try {
     const userId = req.params.id;

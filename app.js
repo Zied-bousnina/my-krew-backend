@@ -16,7 +16,10 @@ const missionRoutes = require('./routes/missionRoutes.js');
 
 const app = express();
 const socket = require('socket.io');
+const notificationModel = require('./models/notificationModel.js');
+const userModel = require('./models/userModel.js');
 const PORT = process.env.PORT || 5001;
+
 
 // Apply CORS middleware at the beginning
 app.use(cors());
@@ -80,6 +83,96 @@ const io = socket(server, {
     origin: "*",
     // credentials: true,
   },
+});
+io.on("connection", (socket) => {
+  console.log(`a user connected ${socket}`);
+  global.chatSocket = socket;
+
+  socket.on("newMission", async (data) => {
+    try {
+        // Fetch users with roles RH or ADMIN
+        console.log("newMission event data:", data)
+        const users = await userModel.find({
+            role: { $in: ['RH', 'ADMIN'] }
+        });
+
+        // Iterate over each user and create a notification
+        users.forEach(async (user) => {
+            const newNotification = new notificationModel({
+                userId: user._id,
+                action: "Une nouvelle mission",
+                details: data.details,
+                pathurl: data.pathurl,
+                idToPath: data.idToPath, // Assuming this is related to the mission
+                consultanName: data.consultanName,
+                consultantEmail: data.consultantEmail,
+            });
+
+            await newNotification.save();
+
+            // Emit a notification event to the frontend (if needed)
+            // This requires mapping users to their socket IDs, which is not covered here
+            // Example: io.to(userSocketId).emit("notification", newNotification);
+        });
+
+        console.log(`Notifications created for users with roles RH and ADMIN.`);
+    } catch (error) {
+        console.error("Error handling newMission event:", error);
+    }
+});
+socket.on("NewCRA", async (data) => {
+  try {
+      // Fetch users with roles RH or ADMIN
+      console.log("newCRA event data:", data)
+      const users = await userModel.find({
+          role: { $in: ['RH', 'ADMIN'] }
+      });
+
+      // Iterate over each user and create a notification
+      users.forEach(async (user) => {
+          const newNotification = new notificationModel({
+              userId: user._id,
+              action: "Une nouvelle CRA",
+              details: data.details,
+              pathurl: data.pathurl,
+              idToPath: data.idToPath, // Assuming this is related to the mission
+              consultanName: data.consultanName,
+              consultantEmail: data.consultantEmail,
+          });
+
+          await newNotification.save();
+
+          // Emit a notification event to the frontend (if needed)
+          // This requires mapping users to their socket IDs, which is not covered here
+          // Example: io.to(userSocketId).emit("notification", newNotification);
+      });
+
+      console.log(`Notifications created for users with roles RH and ADMIN.`);
+  } catch (error) {
+      console.error("Error handling newMission event:", error);
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+  socket.on('error', (error) => {
+    console.error('Socket error:', error);
+});
+
+
+
+
+
+
 });
 
 // Additional socket.io configuration if needed

@@ -12,6 +12,7 @@ const { generateOTP,generateRandomPassword, mailTransport, generateEmailTemplate
 const RHvalidation = require('../validations/AddRhValidation.js');
 var mailer = require('../utils/mailer');
 const { sendError } = require("../utils/helper.js");
+const LogModel = require("../models/Log.model.js");
 const getAllRH = async (req, res) => {
     try {
       const consultants = await userModel
@@ -26,7 +27,7 @@ const getAllRH = async (req, res) => {
   };
 
 
-  const AddRH = asyncHandler(async (req, res, next) => {
+const AddRH = asyncHandler(async (req, res, next) => {
     const { errors, isValid } = RHvalidation(req.body);
     console.log(req.body);
 
@@ -60,6 +61,11 @@ const getAllRH = async (req, res) => {
       });
 
       const user = await newUser.save();
+      await new LogModel({
+        userId: req.user.id, // Capture the newly created user's ID for the log
+        action: 'Add RH',
+        details: `HR account created successfully for ${user.email}`
+      }).save();
 
       // You can send an email or response here if needed
       mailer.send({
@@ -83,7 +89,7 @@ const getAllRH = async (req, res) => {
     }
   });
 
-  const resetPassword = async (req, res) => {
+const resetPassword = async (req, res) => {
     console.log(req.body)
     const { password } = req.body;
     const user = await userModel.findById(req.user.id);
@@ -149,7 +155,11 @@ const deleteRhAccount = async (req, res) => {
       return sendError(res, "User not found");
     }
     await user.remove();
-
+    await new LogModel({
+      userId: req.user.id,
+      action: 'Suppression du compte RH',
+      details: `Le compte RH avec l'ID ${req.params.id} a été supprimé avec succès.`
+    }).save();
 
 
   return res.status(200).json({ message: 'User deleted successfully' });

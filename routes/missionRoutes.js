@@ -30,18 +30,26 @@ router.put(
 
 router.put(
   "/updateMissionStatus/:id",
+  passport.authenticate("jwt", { session: false }),
+  isRole(ROLES.CONSULTANT,ROLES.ADMIN, ROLES.RH),
   updateMissionStatus
 );
 router.put(
   "/validateMissionClientInfo/:id",
+  passport.authenticate("jwt", { session: false }),
+  isRole(ROLES.CONSULTANT,ROLES.ADMIN, ROLES.RH),
   validateMissionClientInfo
 );
 router.get(
   "/getMissionById/:id",
+  passport.authenticate("jwt", { session: false }),
+  isRole(ROLES.CONSULTANT,ROLES.ADMIN, ROLES.RH),
   getMissionById
 );
 router.get(
   "/getConsultantInfoById/:id",
+  passport.authenticate("jwt", { session: false }),
+  isRole(ROLES.CONSULTANT,ROLES.ADMIN, ROLES.RH),
   getConsultantInfoById
 );
 router

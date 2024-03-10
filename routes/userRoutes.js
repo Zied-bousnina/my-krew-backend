@@ -39,6 +39,9 @@ const {
   getPreregistrationFirstMission,
 } = require("../controllers/preregistration.Controller.js");
 const { GetCraByMissionId, validateCRA } = require("../controllers/cra.controller.js");
+const { fetchDataByUserId } = require("../controllers/log.controller.js");
+const { fetchNotificationsByCurrentUser, deleteNotificationById } = require("../controllers/notification.controller.js");
+const { addDocumentToConsultant } = require("../controllers/consultant.controller.js");
 const router = express.Router();
 const storage = multer.diskStorage({});
 
@@ -235,6 +238,27 @@ router
   router.get("/verify-token", isResetTokenValid, (req, res)=> {
     res.json({success:true})
   })
+// Add a route for fetching data by userId
+router.route('/fetchDataByUserId')
+  .get(passport.authenticate("jwt", { session: false }),
+       isRole(ROLES.CONSULTANT,ROLES.ADMIN, ROLES.RH, ROLES.ADMIN),
+       fetchDataByUserId);
 
+router.route('/fetchNotificationsByCurrentUser')
+  .get(passport.authenticate("jwt", { session: false }),
+       isRole(ROLES.CONSULTANT,ROLES.ADMIN, ROLES.RH, ROLES.ADMIN),
+       fetchNotificationsByCurrentUser);
+
+router.route('/deleteNotificationById/:notificationId')
+  .delete(passport.authenticate("jwt", { session: false }),
+       isRole(ROLES.CONSULTANT,ROLES.ADMIN, ROLES.RH, ROLES.ADMIN),
+       deleteNotificationById);
+
+       router.post(
+        "/addDocumentToConsultant/:consultantId",
+        passport.authenticate("jwt", { session: false }),
+        isRole(ROLES.CONSULTANT,ROLES.ADMIN,ROLES.RH),
+        addDocumentToConsultant
+      );
 
 module.exports = router;

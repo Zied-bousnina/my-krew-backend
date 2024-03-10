@@ -6,54 +6,41 @@ const preRegistrationModel = require("../models/preRegistrationModel");
 const newMissionModel = require("../models/newMissionModel");
 const userModel = require("../models/userModel.js");
 const contractModel = require("../models/contractModel.js");
+const LogModel = require("../models/Log.model.js");
 
 const createMission = async (req, res) => {
   try {
+    // Destructure request body
     const {
-      firstName,
-      lastName,
-      position,
-      email,
-      phoneNumber,
-      company,
-      metier,
-      secteur,
-      simulation,
-      client,
-      tjm,
-      debut,
-      fin,
+      firstName, lastName, position, email, phoneNumber,
+      company, metier, secteur, simulation, client,
+      tjm, debut, fin,
     } = req.body;
+
+    // Handle file upload with proper validation
     const { simulationfile } = req.files;
-console.log(simulation)
-    //new contract process
+    if (!simulationfile) {
+      return res.status(400).json({
+        message: "Le fichier de simulation est requis.",
+        status: "error",
+        action: "mission.controller.js/createMission",
+      });
+    }
+
+    const simulationUrl = await uploadFileToCloudinary(simulationfile, "simulations");
+
+    // Create a new ContractProcess (assuming this does not fail; otherwise, add error handling)
     const newContractProcess = new ContractProcess();
     const savedContractProcess = await newContractProcess.save();
 
-    // Create a new document based on your model structure
+
+    // Create a new mission document
     const mission = new newMission({
       userId: req.user.id,
       clientInfo: {
-        company: {
-          value: company,
-        },
-        clientContact: {
-          firstName: {
-            value: firstName,
-          },
-          lastName: {
-            value: lastName,
-          },
-          position: {
-            value: position,
-          },
-          email: {
-            value: email,
-          },
-          phoneNumber: {
-            value: phoneNumber,
-          },
-        },
+        company: { value: company },
+        clientContact: { firstName: { value: firstName }, lastName: { value: lastName },
+          position: { value: position }, email: { value: email }, phoneNumber: { value: phoneNumber } },
       },
       missionInfo: {
         profession: { value: metier },
@@ -63,29 +50,39 @@ console.log(simulation)
         startDate: { value: debut },
         endDate: { value: fin },
         simulation: { value: simulation },
-        isSimulationValidated: {
-          value: await uploadFileToCloudinary(
-            simulationfile,
-            "isSimulationValidated"
-          ),
-        },
+        isSimulationValidated: { value: simulationUrl },
       },
       status: "PENDING",
       contractProcess: savedContractProcess._id,
     });
+
     const savedMission = await mission.save();
+
+    // Update user document with the new mission
     const user = await User.findById(req.user.id);
     user.missions.push(savedMission._id);
     await user.save();
+
+    // Log the successful mission creation
+    await new LogModel({
+      userId: req.user.id,
+      action: 'Création de mission',
+      details: `Une nouvelle mission pour le client ${client} a été créée avec succès.`,
+    }).save();
+
     return res.status(200).json({
       status: "success",
       action: "mission.controller.js/createMission",
       data: savedMission,
+      user:user
     });
   } catch (error) {
     console.error(error);
+
+
+
     return res.status(500).json({
-      message: "Internal Server Error",
+      message: "Erreur interne du serveur",
       status: "error",
       action: "mission.controller.js/createMission",
     });
@@ -96,9 +93,36 @@ const updateTjm = async (req, res) => {
   try {
     const { id } = req.params;
     const { tjm } = req.body;
+
+    // Find the mission by ID
     const mission = await newMission.findById(id);
+
+    // Check if the mission exists
+    if (!mission) {
+      await new LogModel({
+        userId: req.user.id,
+        action: 'Mise à jour du TJM',
+        details: `Échec de la mise à jour du TJM: La mission avec l'ID ${id} n'existe pas.`,
+      }).save();
+
+      return res.status(404).json({
+        message: "Mission non trouvée",
+        status: "error",
+        action: "mission.controller.js/updateTjm",
+      });
+    }
+
+    // Update the TJM value
     mission.missionInfo.dailyRate.value = tjm;
     const updatedMission = await mission.save();
+
+    // Log the successful update
+    await new LogModel({
+      userId: req.user.id, // Assuming you have access to req.user.id
+      action: 'Mise à jour du TJM',
+      details: `Le TJM de la mission avec l'ID ${id} a été mis à jour avec succès à ${tjm}.`,
+    }).save();
+
     return res.status(200).json({
       status: "success",
       action: "mission.controller.js/updateTjm",
@@ -106,13 +130,16 @@ const updateTjm = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+
+
     return res.status(500).json({
-      message: "Internal Server Error",
+      message: "Erreur interne du serveur",
       status: "error",
       action: "mission.controller.js/updateTjm",
     });
   }
 };
+
 
 //*helper function
 const uploadFileToCloudinary = async (file, folderName) => {
@@ -134,23 +161,53 @@ const updateMissionStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
+    // Find the mission by ID
     const mission = await newMission.findById(id);
+
+    // Check if the mission exists
+    if (!mission) {
+      await new LogModel({
+        userId: req.user.id,
+        action: 'Mise à jour du statut de la mission',
+        details: `La mission avec l'ID ${id} n'a pas été trouvée.`,
+      }).save();
+
+      return res.status(404).json({
+        message: "Mission non trouvée",
+        status: "error",
+        action: "mission.controller.js/updateMissionStatus",
+      });
+    }
+
+    // Update the mission status
     mission.status = status;
-    let updatedMission = await mission.save();
+    await mission.save();
+
+    // Log the successful update
+    await new LogModel({
+      userId: req.user.id, // Assuming you have user identification mechanism
+      action: 'Mise à jour du statut de la mission',
+      details: `Le statut de la mission avec l'ID ${id} a été mis à jour avec succès à '${status}'.`,
+    }).save();
 
     return res.status(200).json({
       status: "success",
       action: "mission.controller.js/updateMissionStatus",
+      data: { id: mission.id, status: mission.status },
     });
   } catch (error) {
     console.error(error);
+
+
+
     return res.status(500).json({
-      message: "Internal Server Error",
+      message: "Erreur interne du serveur",
       status: "error",
       action: "mission.controller.js/updateMissionStatus",
     });
   }
 };
+
 
 const getMissionById = async (req, res) => {
   try {
@@ -320,6 +377,11 @@ const killMission = async (req, res) => {
 
     // Save the updated mission
     await mission.save();
+    await new LogModel({
+      userId: req.user.id,
+      action: 'Mission annulée',
+      details: `La mission avec l'ID : ${missionId} a été annulée avec succès.`,
+    }).save();
 
     res.status(200).json({ message: "Mission killed successfully" });
   } catch (error) {
