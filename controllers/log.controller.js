@@ -6,9 +6,10 @@ const fetchDataByUserId = async (req, res) => {
     const { limit } = req.query; // Expecting a query parameter 'limit' to optionally limit the results
 
     try {
-        let query = LogModel.find({ userId });
+        // Initialize the query with a filter for userId and sort it by createdAt in descending order
+        let query = LogModel.find({ userId }).sort({ createdAt: -1 });
 
-        // Check if a limit is specified and it's set to fetch only 5 records
+        // Check if a limit is specified and apply it
         if (limit === '5') {
             query = query.limit(5);
         }
@@ -29,6 +30,7 @@ const fetchDataByUserId = async (req, res) => {
         return res.status(500).json({ message: "Erreur interne du serveur" });
     }
 };
+
 
 
 module.exports = {
